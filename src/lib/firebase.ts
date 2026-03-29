@@ -1,6 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
-import { getAI, getGenerativeModel, GoogleAIBackend } from "firebase/ai";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAsm8WGTm9GYdBrqe1c0ObSbO5TKt4nvnU",
@@ -20,11 +19,5 @@ if (typeof window !== "undefined") {
     if (yes) getAnalytics(app);
   });
 }
-
-// Firebase AI Logic — uses Google AI backend authorized via Firebase
-// This goes through Firebase's authorized endpoint, NOT generativelanguage.googleapis.com directly
-const ai = getAI(app, { backend: new GoogleAIBackend() });
-
-export const geminiFlash = getGenerativeModel(ai, { model: "gemini-2.0-flash" });
 
 export { app };

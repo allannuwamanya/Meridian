@@ -1,8 +1,9 @@
 "use client";
 import { useResumeStore } from "@/store/useResumeStore";
-import { Sparkles, Wand2, CheckCircle2, X, Loader2 } from "lucide-react";
+import { Sparkles, Wand2, CheckCircle2, X, Loader2, Lightbulb, AlertTriangle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useSummaryVariants } from "@/hooks/useAI";
+import { useAINudge } from "@/hooks/useAINudge";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { AIVariant } from "@/types/resume";
@@ -46,6 +47,10 @@ export default function SummaryEditor() {
   const [localSummary, setLocalSummary] = useState(resume.summary);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // AI nudge — fires 1.8s after user pauses typing
+  const nudgeContext = `Professional summary for ${resume.targetRole || "a professional"} targeting ${resume.targetCompany || "top companies"}`;
+  const { nudge, isLoading: isNudgeLoading } = useAINudge(localSummary, nudgeContext);
+
   // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
@@ -86,17 +91,11 @@ export default function SummaryEditor() {
           )}
         >
           {isGenerating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
-          {isGenerating ? "Analyzing & Generating…" : "AI Draft Variants"}
+          {isGenerating ? "Crafting variants…" : "AI Draft Variants"}
         </button>
       </div>
 
-      {isGenerating && (
-        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="text-xs text-rose-600 flex items-center justify-end gap-2 pr-2 -mt-2 mb-2 font-medium">
-          <Loader2 className="w-3 h-3 animate-spin" /> AI is crafting your options...
-        </motion.div>
-      )}
-
-      {/* Standard Textarea replacing Tiptap */}
+      {/* Textarea */}
       <div className={cn(
         "bg-white rounded-2xl border transition-all overflow-hidden relative",
         isGenerating ? "border-rose-200 bg-rose-50/30" : "border-gray-200 focus-within:border-rose-400 focus-within:ring-2 focus-within:ring-rose-500/10"
@@ -114,7 +113,7 @@ export default function SummaryEditor() {
         />
       </div>
 
-      {/* Char count */}
+      {/* Char count + ATS indicator */}
       <div className="flex items-center justify-between text-xs px-1">
         <span className={cn(
           charStatus === "good" ? "text-emerald-600 font-medium" :
@@ -127,6 +126,32 @@ export default function SummaryEditor() {
         </span>
         <span className="text-gray-400 font-medium">Target: 200–600 chars</span>
       </div>
+
+      {/* AI Writing Nudge */}
+      <AnimatePresence>
+        {(nudge || isNudgeLoading) && !isGenerating && localSummary.length >= 40 && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            className={cn(
+              "flex items-start gap-2.5 px-3.5 py-2.5 rounded-xl border text-xs",
+              isNudgeLoading ? "bg-gray-50 border-gray-100 text-gray-400" :
+              nudge?.type === "praise" ? "bg-emerald-50 border-emerald-100 text-emerald-700" :
+              nudge?.type === "warning" ? "bg-amber-50 border-amber-100 text-amber-700" :
+              "bg-blue-50 border-blue-100 text-blue-700"
+            )}
+          >
+            {isNudgeLoading
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin shrink-0 mt-0.5" />
+              : nudge?.type === "warning"
+                ? <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                : <Lightbulb className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+            }
+            <span>{isNudgeLoading ? "AI coach is reading your summary…" : nudge?.text}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* AI Variants */}
       <AnimatePresence>
@@ -162,16 +187,17 @@ export default function SummaryEditor() {
         )}
       </AnimatePresence>
 
-      {/* Tips box */}
-      <div className="ai-badge rounded-xl p-4 space-y-2 mt-4">
+      {/* Writing tips */}
+      <div className="ai-badge rounded-xl p-4 space-y-2 mt-2">
         <div className="flex items-center gap-2 text-xs font-bold text-rose-600">
           <Sparkles className="w-3.5 h-3.5" />
-          Writing Tips
+          ATS Writing Tips
         </div>
         <ul className="text-xs text-gray-600 space-y-2 list-none pl-1">
-          <li className="flex items-start gap-2"><span className="text-rose-400 font-bold mt-0.5">•</span> Start with your title and years of experience.</li>
-          <li className="flex items-start gap-2"><span className="text-rose-400 font-bold mt-0.5">•</span> Name 1–2 signature achievements with metrics.</li>
-          <li className="flex items-start gap-2"><span className="text-rose-400 font-bold mt-0.5">•</span> End with what you're targeting or uniquely bring.</li>
+          <li className="flex items-start gap-2"><span className="text-rose-400 font-bold mt-0.5">•</span> Open with your title and years of experience.</li>
+          <li className="flex items-start gap-2"><span className="text-rose-400 font-bold mt-0.5">•</span> Include 1–2 signature achievements with metrics.</li>
+          <li className="flex items-start gap-2"><span className="text-rose-400 font-bold mt-0.5">•</span> Mirror keywords from the job description for ATS.</li>
+          <li className="flex items-start gap-2"><span className="text-rose-400 font-bold mt-0.5">•</span> End with what you are targeting or uniquely bring.</li>
         </ul>
       </div>
     </div>

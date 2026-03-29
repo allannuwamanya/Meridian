@@ -1,13 +1,56 @@
-import { geminiFlash } from "./firebase";
 import { AIVariant } from "@/types/resume";
 import { v4 as uuidv4 } from "uuid";
 
+// ─── Internal helpers ─────────────────────────────────────────────────────────
+
+async function callAI(prompt: string, expectJson: boolean = false): Promise<string> {
+  const res = await fetch("/api/ai", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt, stream: false, expectJson }),
+  });
+  if (!res.ok) {
+    const { error } = await res.json().catch(() => ({ error: "Unknown error" }));
+    throw new Error(error ?? `AI request failed (${res.status})`);
+  }
+  const { text } = await res.json();
+  if (!text) throw new Error("AI returned an empty response.");
+  return text;
+}
+
+async function streamAI(
+  prompt: string,
+  onToken: (token: string) => void
+): Promise<string> {
+  const res = await fetch("/api/ai", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt, stream: true }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Error(body || `AI stream failed (${res.status})`);
+  }
+
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error("No readable stream from AI.");
+
+  const decoder = new TextDecoder();
+  let fullContent = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    const token = decoder.decode(value, { stream: true });
+    fullContent += token;
+    onToken(token);
+  }
+
+  return fullContent.trim();
+}
+
 // ─── Bullet Enhancer ──────────────────────────────────────────────────────────
 
-/**
- * Takes a weak bullet point and streams back an enhanced, achievement-framed version.
- * Uses STAR framework: Situation → Task → Action → Result.
- */
 export async function streamEnhanceBullet(
   bullet: string,
   role: string,
@@ -29,15 +72,9 @@ Rules:
 
 Respond with ONLY the improved bullet point text, nothing else.`;
 
-  let fullContent = "";
   try {
-    const result = await geminiFlash.generateContentStream(prompt);
-    for await (const chunk of result.stream) {
-      const token = chunk.text();
-      fullContent += token;
-      onToken(token);
-    }
-    onDone(fullContent.trim());
+    const final = await streamAI(prompt, onToken);
+    onDone(final);
   } catch (error) {
     console.error("AI enhance error:", error);
     onDone(bullet); // fallback to original
@@ -47,10 +84,6 @@ Respond with ONLY the improved bullet point text, nothing else.`;
 
 // ─── Summary Variants ─────────────────────────────────────────────────────────
 
-/**
- * Generates 3 distinct summary variants optimized for a target role.
- * Returns an array of AIVariant with labels.
- */
 export async function generateSummaryVariants(
   currentSummary: string,
   targetRole: string,
@@ -74,9 +107,9 @@ Current summary:
 "${currentSummary}"
 
 Generate 3 variants with these distinct angles:
-1. **Achievement-Led**: Opens with a hard metric or major win
-2. **Role-Specific**: Tightly tailored to the target role/company keywords
-3. **Narrative**: Tells a compelling career story arc
+1. Achievement-Led: Opens with a hard metric or major win
+2. Role-Specific: Tightly tailored to the target role/company keywords
+3. Narrative: Tells a compelling career story arc
 
 Rules:
 - Each summary must be 2-3 sentences
@@ -91,23 +124,16 @@ Respond in this exact JSON format (no markdown, no explanation):
   {"label":"Narrative","content":"..."}
 ]`;
 
-  try {
-    const result = await geminiFlash.generateContent(prompt);
-    const text = result.response.text().trim();
-    // Strip markdown code fences if present
-    const clean = text.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
-    const parsed = JSON.parse(clean) as { label: string; content: string }[];
-    return parsed.map((v) => ({ id: uuidv4(), label: v.label, content: v.content }));
-  } catch (error) {
-    console.error("Summary variants error:", error);
-    throw error;
-  }
+  const text = await callAI(prompt, true);
+  const clean = text.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
+  const parsed = JSON.parse(clean) as { label: string; content: string }[];
+  return parsed.map((v) => ({ id: uuidv4(), label: v.label, content: v.content }));
 }
 
 // ─── Keyword Scanner ──────────────────────────────────────────────────────────
 
 export interface KeywordScanResult {
-  score: number; // 0-100
+  score: number;
   matched: string[];
   missing: string[];
   suggestions: string[];
@@ -139,21 +165,15 @@ Respond in this exact JSON format (no markdown):
   "atsWarnings": [<ATS formatting issues detected, max 3>]
 }`;
 
-  try {
-    const result = await geminiFlash.generateContent(prompt);
-    const text = result.response.text().trim();
-    const clean = text.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
-    return JSON.parse(clean) as KeywordScanResult;
-  } catch (error) {
-    console.error("Keyword scan error:", error);
-    throw error;
-  }
+  const text = await callAI(prompt, true);
+  const clean = text.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
+  return JSON.parse(clean) as KeywordScanResult;
 }
 
 // ─── Resume Score ─────────────────────────────────────────────────────────────
 
 export interface ResumeScore {
-  overall: number; // 0-100
+  overall: number;
   breakdown: {
     impact: number;
     clarity: number;
@@ -191,15 +211,9 @@ Respond in this exact JSON format (no markdown):
   "quickWins": [<max 3 easy improvements>]
 }`;
 
-  try {
-    const result = await geminiFlash.generateContent(prompt);
-    const text = result.response.text().trim();
-    const clean = text.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
-    return JSON.parse(clean) as ResumeScore;
-  } catch (error) {
-    console.error("Resume score error:", error);
-    throw error;
-  }
+  const text = await callAI(prompt, true);
+  const clean = text.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
+  return JSON.parse(clean) as ResumeScore;
 }
 
 // ─── AI Skill Suggestions ─────────────────────────────────────────────────────
@@ -224,15 +238,9 @@ Rules:
 Respond with ONLY a JSON array of strings, no explanation:
 ["skill1", "skill2", ...]`;
 
-  try {
-    const result = await geminiFlash.generateContent(prompt);
-    const text = result.response.text().trim();
-    const clean = text.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
-    return JSON.parse(clean) as string[];
-  } catch (error) {
-    console.error("Skill suggestion error:", error);
-    return [];
-  }
+  const text = await callAI(prompt, true);
+  const clean = text.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
+  return JSON.parse(clean) as string[];
 }
 
 // ─── Text extractor helper ────────────────────────────────────────────────────

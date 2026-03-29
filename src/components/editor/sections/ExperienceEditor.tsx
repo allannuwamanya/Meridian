@@ -1,14 +1,54 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useResumeStore } from "@/store/useResumeStore";
-import { Plus, Trash2, ChevronDown, ChevronUp, Wand2, Sparkles, Loader2 } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp, Wand2, Sparkles, Loader2, Zap } from "lucide-react";
 import SmartField from "../SmartField";
 import { cn } from "@/lib/utils";
 import { formatDateRange } from "@/lib/utils";
 import { BulletPoint, WorkExperience } from "@/types/resume";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useEnhanceBullet } from "@/hooks/useAI";
+import { toast } from "@/components/ui/Toast";
 
+// ─── Bullet impact scorer — local heuristic, zero API ────────────────────────
+type ImpactLevel = "empty" | "weak" | "good" | "strong";
+
+function scoreBullet(content: string): ImpactLevel {
+  if (!content.trim() || content.length < 10) return "empty";
+  const STRONG_VERBS = /^(led|built|drove|grew|scaled|reduced|improved|delivered|launched|architected|designed|created|achieved|secured|generated|saved|increased|decreased|managed|mentored|negotiated|transformed|automated|optimized|pioneered|spearheaded|orchestrated)/i;
+  const METRICS = /(\d+%|\$[\d,.]+|\d+x|\d+\s*(million|billion|k|users|customers|clients|engineers|people|days|hours|minutes|months|years|points|sales|leads|accounts))/i;
+  const hasVerb = STRONG_VERBS.test(content.trim());
+  const hasMetric = METRICS.test(content);
+  if (hasVerb && hasMetric) return "strong";
+  if (hasVerb || hasMetric) return "good";
+  return "weak";
+}
+
+const IMPACT_CONFIG: Record<ImpactLevel, { label: string; color: string; dot: string }> = {
+  empty:  { label: "",         color: "",                          dot: "" },
+  weak:   { label: "Weak",    color: "text-red-500 bg-red-50 border-red-100",     dot: "bg-red-400" },
+  good:   { label: "Good",    color: "text-amber-600 bg-amber-50 border-amber-100", dot: "bg-amber-400" },
+  strong: { label: "Strong",  color: "text-emerald-600 bg-emerald-50 border-emerald-100", dot: "bg-emerald-400" },
+};
+
+function BulletImpactBadge({ content }: { content: string }) {
+  const level = useMemo(() => scoreBullet(content), [content]);
+  if (level === "empty") return null;
+  const cfg = IMPACT_CONFIG[level];
+  return (
+    <motion.span
+      key={level}
+      initial={{ opacity: 0, scale: 0.85 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className={cn("inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full border", cfg.color)}
+    >
+      <div className={cn("w-1.5 h-1.5 rounded-full", cfg.dot)} />
+      {cfg.label}
+    </motion.span>
+  );
+}
+
+// ─── Bullet Editor ────────────────────────────────────────────────────────────
 function BulletEditor({ bullet, expId, onRemove }: {
   bullet: BulletPoint; expId: string; onRemove: () => void;
 }) {
@@ -27,7 +67,7 @@ function BulletEditor({ bullet, expId, onRemove }: {
       <div className="w-3.5 mt-3 shrink-0 text-rose-400 text-xs select-none">•</div>
       <div className="flex-1 relative">
         <textarea
-          value={isThisEnhancing ? (ai.streamingContent || "AI is thinking...") : bullet.content}
+          value={isThisEnhancing ? (ai.streamingContent || "AI is enhancing…") : bullet.content}
           onChange={handleChange}
           rows={1}
           placeholder="Describe an achievement with impact…"
@@ -40,7 +80,11 @@ function BulletEditor({ bullet, expId, onRemove }: {
           style={{ minHeight: "42px" }}
           disabled={isThisEnhancing}
         />
-        {/* AI Enhance button — shown on hover */}
+        {/* Impact badge */}
+        <div className="absolute left-3 -bottom-4">
+          <BulletImpactBadge content={bullet.content} />
+        </div>
+        {/* AI Enhance button */}
         <button
           onClick={() => enhance(expId, bullet.id, bullet.content)}
           disabled={isThisEnhancing || !bullet.content.trim()}
@@ -69,9 +113,74 @@ function BulletEditor({ bullet, expId, onRemove }: {
   );
 }
 
+// ─── Bullet Generator ─────────────────────────────────────────────────────────
+function useBulletGenerator(expId: string) {
+  const { addBullet, updateBullet, resume } = useResumeStore();
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const generate = useCallback(async (role: string, company: string) => {
+    if (!role.trim()) { toast.warning("No role set", "Fill in the role title first."); return; }
+    setIsGenerating(true);
+    try {
+      const jdContext = resume.jobDescription?.slice(0, 600) ?? "";
+      const res = await fetch("/api/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          expectJson: true,
+          stream: false,
+          prompt: `You are an expert resume writer. Generate 4 strong achievement bullet points for this role.
+
+Role: "${role}"
+Company: "${company || "a technology company"}"
+${jdContext ? `Job context: "${jdContext}"` : ""}
+
+Rules:
+- Start each bullet with a strong past-tense action verb
+- Include at least 2 bullets with metrics/numbers
+- Keep each bullet under 180 characters
+- No "I" or "we" — implied third person
+- Focus on business impact, not just tasks
+
+Respond with ONLY this JSON array (no markdown):
+["bullet 1", "bullet 2", "bullet 3", "bullet 4"]`
+        }),
+      });
+      if (!res.ok) throw new Error("Generation failed");
+      const { text } = await res.json();
+      const clean = text.replace(/^```json\n?/, "").replace(/\n?```$/, "").trim();
+      const bullets: string[] = JSON.parse(clean);
+      bullets.forEach((content) => {
+        const exp = resume.experience.find((e) => e.id === expId);
+        if (!exp) return;
+        // Add a bullet and immediately fill it
+        const newId = crypto.randomUUID();
+        addBullet(expId);
+        // The new bullet gets auto-assigned an id from the store, update the last one
+        setTimeout(() => {
+          const updated = useResumeStore.getState().resume.experience.find((e) => e.id === expId);
+          if (updated) {
+            const last = updated.bullets[updated.bullets.length - 1];
+            if (last) updateBullet(expId, last.id, content);
+          }
+        }, 0);
+      });
+      toast.success(`${bullets.length} bullets generated!`, `Tailored for ${role} at ${company || "your target company"}.`);
+    } catch (err: any) {
+      toast.error("Generation failed", err?.message ?? "Try again.");
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [expId, resume, addBullet, updateBullet]);
+
+  return { generate, isGenerating };
+}
+
+// ─── Experience Card ──────────────────────────────────────────────────────────
 function ExperienceCard({ exp }: { exp: WorkExperience }) {
   const { updateExperience, removeExperience, addBullet, removeBullet, activeExperienceId, setActiveExperience } = useResumeStore();
   const { enhance: enhanceAll } = useEnhanceBullet();
+  const { generate, isGenerating } = useBulletGenerator(exp.id);
   const isOpen = activeExperienceId === exp.id;
   const [isEnhancingAll, setIsEnhancingAll] = useState(false);
 
@@ -83,6 +192,10 @@ function ExperienceCard({ exp }: { exp: WorkExperience }) {
     }
     setIsEnhancingAll(false);
   }, [exp.bullets, exp.id, enhanceAll]);
+
+  // Count strong bullets for card preview
+  const strongCount = exp.bullets.filter((b) => scoreBullet(b.content) === "strong").length;
+  const totalFilled = exp.bullets.filter((b) => b.content.trim()).length;
 
   return (
     <motion.div layout className="bg-white rounded-2xl overflow-hidden border border-gray-200 group shadow-sm hover:shadow-card transition-shadow">
@@ -100,6 +213,15 @@ function ExperienceCard({ exp }: { exp: WorkExperience }) {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          {/* Bullet quality mini-indicator */}
+          {totalFilled > 0 && (
+            <div className="flex items-center gap-1 text-[10px] text-gray-400">
+              <span className="text-emerald-500 font-semibold">{strongCount}</span>
+              <span>/</span>
+              <span>{totalFilled}</span>
+              <span className="hidden sm:inline">strong</span>
+            </div>
+          )}
           <button
             onClick={(e) => { e.stopPropagation(); removeExperience(exp.id); }}
             className="w-6 h-6 flex items-center justify-center hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all border border-transparent hover:border-red-200"
@@ -165,7 +287,7 @@ function ExperienceCard({ exp }: { exp: WorkExperience }) {
                     <Plus className="w-3 h-3" /> Add bullet
                   </button>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-5">
                   <AnimatePresence>
                     {exp.bullets.map((bullet) => (
                       <motion.div key={bullet.id}
@@ -178,15 +300,32 @@ function ExperienceCard({ exp }: { exp: WorkExperience }) {
               </div>
 
               {/* AI Actions */}
-              <div className="ai-badge rounded-xl">
+              <div className="ai-badge rounded-xl pt-3 mt-2">
                 <div className="flex items-center gap-2 text-xs font-semibold text-rose-600 mb-2.5">
                   <Sparkles className="w-3.5 h-3.5" />
                   AI Actions
                 </div>
                 <div className="flex flex-wrap gap-2">
+                  {/* Generate bullets */}
+                  <button
+                    onClick={() => generate(exp.role, exp.company)}
+                    disabled={isGenerating}
+                    className={cn(
+                      "text-[10px] px-2.5 py-1.5 rounded-lg transition-all border flex items-center gap-1.5 font-semibold",
+                      isGenerating
+                        ? "bg-rose-100 text-rose-600 border-rose-300 cursor-wait"
+                        : "bg-gradient-to-r from-rose-500 to-pink-500 text-white border-rose-500 hover:from-rose-600 hover:to-pink-600 shadow-sm"
+                    )}
+                  >
+                    {isGenerating
+                      ? <><Loader2 className="w-2.5 h-2.5 animate-spin" /> Generating…</>
+                      : <><Zap className="w-2.5 h-2.5" /> Generate bullets</>}
+                  </button>
+
+                  {/* Enhance all */}
                   <button
                     onClick={handleEnhanceAll}
-                    disabled={isEnhancingAll || exp.bullets.every(b => !b.content.trim())}
+                    disabled={isEnhancingAll || exp.bullets.every((b) => !b.content.trim())}
                     className={cn(
                       "text-[10px] px-2.5 py-1 rounded-lg transition-all border flex items-center gap-1",
                       isEnhancingAll
@@ -198,13 +337,6 @@ function ExperienceCard({ exp }: { exp: WorkExperience }) {
                       ? <><Loader2 className="w-2.5 h-2.5 animate-spin" /> Enhancing…</>
                       : "✦ Enhance all bullets"}
                   </button>
-                  {["Check anti-patterns", "Detect career gaps"].map((action) => (
-                    <button key={action}
-                      className="text-[10px] px-2.5 py-1 bg-white hover:bg-gray-50 text-gray-500 hover:text-gray-700 rounded-lg transition-colors border border-gray-200"
-                    >
-                      {action}
-                    </button>
-                  ))}
                 </div>
               </div>
             </div>
@@ -215,6 +347,7 @@ function ExperienceCard({ exp }: { exp: WorkExperience }) {
   );
 }
 
+// ─── Experience Editor ────────────────────────────────────────────────────────
 export default function ExperienceEditor() {
   const { resume, addExperience } = useResumeStore();
 

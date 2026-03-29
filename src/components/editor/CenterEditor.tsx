@@ -12,20 +12,20 @@ import LanguagesEditor from "./sections/LanguagesEditor";
 import VolunteeringEditor from "./sections/VolunteeringEditor";
 import PublicationsEditor from "./sections/PublicationsEditor";
 import AwardsEditor from "./sections/AwardsEditor";
-import ScoreCard from "@/components/ui/ScoreCard";
+import ToastContainer from "@/components/ui/Toast";
 
 const SECTION_MAP: Record<string, React.ComponentType> = {
-  contact: ContactEditor,
-  summary: SummaryEditor,
-  experience: ExperienceEditor,
-  education: EducationEditor,
-  skills: SkillsEditor,
-  projects: ProjectsEditor,
+  contact:        ContactEditor,
+  summary:        SummaryEditor,
+  experience:     ExperienceEditor,
+  education:      EducationEditor,
+  skills:         SkillsEditor,
+  projects:       ProjectsEditor,
   certifications: CertificationsEditor,
-  languages: LanguagesEditor,
-  volunteering: VolunteeringEditor,
-  publications: PublicationsEditor,
-  awards: AwardsEditor,
+  languages:      LanguagesEditor,
+  volunteering:   VolunteeringEditor,
+  publications:   PublicationsEditor,
+  awards:         AwardsEditor,
 };
 
 export default function CenterEditor() {
@@ -33,28 +33,27 @@ export default function CenterEditor() {
   const Editor = SECTION_MAP[activeSection];
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
+      <ToastContainer />
       <AnimatePresence mode="wait">
         <motion.div
           key={activeSection}
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -12 }}
-          transition={{ duration: 0.22, ease: "easeInOut" }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2, ease: "easeInOut" }}
           className="flex-1 p-8 max-w-2xl mx-auto w-full"
         >
           {Editor ? (
-            <div className="space-y-8">
+            <div className="space-y-8 pb-12">
               <Editor />
-              {/* Inline ScoreCard at the bottom of every section */}
-              <div className="pt-4 border-t border-white/5">
-                <ScoreCard />
-              </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center h-64 text-slate-600">
-              <div className="text-4xl mb-3">✦</div>
-              <p className="text-sm">This section editor is coming soon.</p>
+            <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+              <div className="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center mb-4">
+                <span className="text-2xl">✦</span>
+              </div>
+              <p className="text-sm text-gray-500">This section editor is coming soon.</p>
             </div>
           )}
         </motion.div>

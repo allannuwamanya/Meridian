@@ -21,8 +21,8 @@ if (typeof window !== "undefined") {
   });
 }
 
-// Firebase AI Logic — Gemini via Google AI backend
-// Uses the free Google AI (Gemini Developer API) via Firebase
+// Firebase AI Logic — uses Google AI backend authorized via Firebase
+// This goes through Firebase's authorized endpoint, NOT generativelanguage.googleapis.com directly
 const ai = getAI(app, { backend: new GoogleAIBackend() });
 
 export const geminiFlash = getGenerativeModel(ai, { model: "gemini-2.0-flash" });

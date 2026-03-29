@@ -42,13 +42,13 @@ export default function SkillsEditor() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white mb-1">Skills</h2>
-          <p className="text-sm text-slate-500">Hard skills only. Recruiters spend 6 seconds on skills — make them count.</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Skills</h2>
+          <p className="text-sm text-gray-500">Hard skills only. Recruiters spend 6 seconds on skills — make them count.</p>
         </div>
         <button
           onClick={fetchAISuggestions}
           disabled={isLoading}
-          className="flex items-center gap-1.5 text-xs bg-violet-600/20 hover:bg-violet-600/30 text-violet-300 border border-violet-500/25 px-3 py-1.5 rounded-lg transition-all shrink-0"
+          className="flex items-center gap-1.5 text-xs bg-rose-600 hover:bg-rose-700 text-white border border-rose-600 px-3 py-1.5 rounded-lg transition-all shrink-0 font-semibold shadow-sm"
         >
           {isLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
           {isLoading ? "Analyzing…" : "AI Suggest"}
@@ -57,7 +57,7 @@ export default function SkillsEditor() {
 
       {/* Tag input */}
       <div
-        className="glass rounded-2xl p-3 border border-white/5 focus-within:border-violet-500/30 transition-colors flex flex-wrap gap-2 min-h-[56px] cursor-text"
+        className="bg-white rounded-2xl p-3 border border-gray-200 focus-within:border-rose-400 focus-within:ring-2 focus-within:ring-rose-500/10 transition-all flex flex-wrap gap-2 min-h-[56px] cursor-text"
         onClick={() => inputRef.current?.focus()}
       >
         <AnimatePresence>
@@ -78,17 +78,17 @@ export default function SkillsEditor() {
           onKeyDown={handleKeyDown}
           onBlur={handleAdd}
           placeholder={resume.skills.length === 0 ? "Type a skill and press Enter…" : ""}
-          className="flex-1 min-w-[120px] text-sm bg-transparent outline-none text-slate-200 placeholder:text-slate-600"
+          className="flex-1 min-w-[120px] text-sm bg-transparent outline-none text-gray-800 placeholder:text-gray-400"
         />
       </div>
-      <p className="text-xs text-slate-600 -mt-4">Press Enter or comma to add · Click a skill to remove</p>
+      <p className="text-xs text-gray-400 -mt-4">Press Enter or comma to add · Click a skill to remove</p>
 
       {/* Search suggestions */}
       {input && quickAddSuggestions.length > 0 && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-2">
           {quickAddSuggestions.map((s) => (
             <button key={s} onClick={() => { addSkill(s); setInput(""); }}
-              className="text-xs px-3 py-1 bg-white/5 hover:bg-violet-500/20 text-slate-400 hover:text-violet-300 rounded-lg border border-white/5 hover:border-violet-500/25 transition-all"
+              className="text-xs px-3 py-1 bg-gray-50 hover:bg-rose-50 text-gray-500 hover:text-rose-600 rounded-lg border border-gray-200 hover:border-rose-200 transition-all"
             >
               + {s}
             </button>
@@ -103,14 +103,14 @@ export default function SkillsEditor() {
             initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
           >
             <div className="ai-badge rounded-xl p-4 space-y-3">
-              <div className="flex items-center gap-2 text-xs font-semibold text-violet-300">
+              <div className="flex items-center gap-2 text-xs font-bold text-rose-600">
                 <Sparkles className="w-3.5 h-3.5" />
                 AI-suggested skills based on your profile & target role
               </div>
               <div className="flex flex-wrap gap-2">
                 {suggestions.map((s) => (
                   <button key={s} onClick={() => accept(s)}
-                    className="text-xs px-3 py-1 bg-violet-500/15 hover:bg-violet-500/30 text-violet-300 hover:text-violet-200 rounded-lg border border-violet-500/20 hover:border-violet-500/40 transition-all"
+                    className="text-xs px-3 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-700 rounded-lg border border-rose-200 hover:border-rose-300 transition-all"
                   >
                     + {s}
                   </button>
@@ -124,11 +124,11 @@ export default function SkillsEditor() {
       {/* Quick Add */}
       {!input && suggestions.length === 0 && (
         <div>
-          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-3">Quick Add</p>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Quick Add</p>
           <div className="flex flex-wrap gap-2">
             {staticSuggestions.map((s) => (
               <button key={s} onClick={() => addSkill(s)}
-                className="text-xs px-3 py-1 bg-white/5 hover:bg-violet-500/15 text-slate-500 hover:text-violet-300 rounded-lg border border-white/5 hover:border-violet-500/20 transition-all"
+                className="text-xs px-3 py-1 bg-gray-50 hover:bg-rose-50 text-gray-500 hover:text-rose-600 rounded-lg border border-gray-200 hover:border-rose-200 transition-all"
               >
                 + {s}
               </button>
@@ -140,13 +140,13 @@ export default function SkillsEditor() {
       {/* Skill count insight */}
       {resume.skills.length > 0 && (
         <div className="flex items-center gap-3 text-xs">
-          <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-violet-600 to-cyan-500 rounded-full transition-all duration-500"
+              className="h-full bg-gradient-to-r from-rose-500 to-pink-400 rounded-full transition-all duration-500"
               style={{ width: `${Math.min((resume.skills.length / 15) * 100, 100)}%` }}
             />
           </div>
-          <span className={resume.skills.length < 6 ? "text-amber-400" : resume.skills.length > 15 ? "text-red-400" : "text-emerald-400"}>
+          <span className={resume.skills.length < 6 ? "text-amber-600" : resume.skills.length > 15 ? "text-red-600" : "text-emerald-600"}>
             {resume.skills.length} skills
             {resume.skills.length < 6 && " — add more"}
             {resume.skills.length > 15 && " — consider trimming"}

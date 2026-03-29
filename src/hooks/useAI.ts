@@ -1,16 +1,12 @@
 import { useState, useCallback } from "react";
 import { useResumeStore } from "@/store/useResumeStore";
 import {
-  streamEnhanceBullet,
-  generateSummaryVariants,
-  scanKeywords,
-  scoreResume,
-  suggestSkills,
-  extractResumeText,
-  KeywordScanResult,
-  ResumeScore,
+  streamEnhanceBullet, generateSummaryVariants,
+  scanKeywords, scoreResume, suggestSkills,
+  extractResumeText, KeywordScanResult, ResumeScore,
 } from "@/lib/ai";
 import { AIVariant } from "@/types/resume";
+import { toast } from "@/components/ui/Toast";
 
 // ─── Bullet Enhancer Hook ─────────────────────────────────────────────────────
 
@@ -27,20 +23,20 @@ export function useEnhanceBullet() {
       setAIFeature("enhance-bullet", bulletId);
       setAIStatus("streaming");
 
-      let enhanced = "";
       try {
         await streamEnhanceBullet(
           currentContent,
           exp.role,
           (token) => appendAIStream(token),
           (final) => {
-            enhanced = final;
             updateBullet(expId, bulletId, final);
           }
         );
         setAIStatus("done");
-      } catch {
+        toast.success("Bullet enhanced!", "Your achievement statement has been improved.");
+      } catch (err: any) {
         setAIStatus("error");
+        toast.error("AI Enhancement Failed", err?.message ?? "Check your connection and try again.");
       } finally {
         setIsEnhancing(null);
         setTimeout(() => clearAI(), 2500);
@@ -72,12 +68,15 @@ export function useSummaryVariants() {
       );
       setAIVariants(variants);
       setAIStatus("done");
-    } catch {
+      toast.success("3 AI variants ready!", "Pick the one that best fits your target role.");
+    } catch (err: any) {
       setAIStatus("error");
+      toast.error("AI Generation Failed", err?.message ?? "Could not reach Gemini. Try again.");
+      clearAI();
     } finally {
       setIsGenerating(false);
     }
-  }, [resume, setAIStatus, setAIFeature, setAIVariants]);
+  }, [resume, setAIStatus, setAIFeature, setAIVariants, clearAI]);
 
   return { generate, isGenerating };
 }
@@ -92,6 +91,7 @@ export function useKeywordScan() {
 
   const scan = useCallback(async () => {
     if (!resume.jobDescription?.trim()) {
+      toast.warning("No job description", "Paste a job description in Set Target first.");
       setError("Paste a job description first in the Job Target settings.");
       return;
     }
@@ -101,8 +101,10 @@ export function useKeywordScan() {
       const resumeText = extractResumeText(resume);
       const data = await scanKeywords(resumeText, resume.jobDescription);
       setResult(data);
-    } catch {
+      toast.success(`ATS Score: ${data.score}/100`, `${data.matched.length} keywords matched.`);
+    } catch (err: any) {
       setError("Scan failed. Please try again.");
+      toast.error("Keyword Scan Failed", err?.message ?? "Try again in a moment.");
     } finally {
       setIsScanning(false);
     }
@@ -126,8 +128,10 @@ export function useResumeScore() {
       const resumeText = extractResumeText(resume);
       const data = await scoreResume(resumeText, resume.targetRole);
       setScore(data);
-    } catch {
+      toast.success(`Resume Score: ${data.overall}/100`, "See the breakdown below.");
+    } catch (err: any) {
       setError("Scoring failed. Please try again.");
+      toast.error("Score Failed", err?.message ?? "Try again in a moment.");
     } finally {
       setIsScoring(false);
     }
@@ -151,21 +155,22 @@ export function useSkillSuggestions() {
         resume.jobDescription ?? "",
         resume.targetRole ?? ""
       );
-      setSuggestions(skills.filter((s) => !resume.skills.includes(s)));
-    } catch {
+      const filtered = skills.filter((s) => !resume.skills.includes(s));
+      setSuggestions(filtered);
+      if (filtered.length === 0) toast.info("No new suggestions", "Your skills are already well-covered!");
+      else toast.success(`${filtered.length} skill suggestions ready!`, "Click any to add it.");
+    } catch (err: any) {
+      toast.error("Suggestion Failed", err?.message ?? "Try again in a moment.");
       setSuggestions([]);
     } finally {
       setIsLoading(false);
     }
   }, [resume]);
 
-  const accept = useCallback(
-    (skill: string) => {
-      addSkill(skill);
-      setSuggestions((prev) => prev.filter((s) => s !== skill));
-    },
-    [addSkill]
-  );
+  const accept = useCallback((skill: string) => {
+    addSkill(skill);
+    setSuggestions((prev) => prev.filter((s) => s !== skill));
+  }, [addSkill]);
 
   return { fetch, isLoading, suggestions, accept };
 }

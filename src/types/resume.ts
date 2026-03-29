@@ -1,5 +1,16 @@
 export type EmploymentType = "Full-time" | "Part-time" | "Contract" | "Freelance" | "Internship";
-export type TemplateId = "modern-minimal" | "classic" | "executive" | "technical" | "creative" | "academic" | "career-changer" | "international";
+export type TemplateId =
+  | "modern-minimal"
+  | "classic"
+  | "executive"
+  | "technical"
+  | "compact"
+  | "bold"
+  | "sidebar"
+  | "creative"
+  | "academic"
+  | "career-changer"
+  | "international";
 
 export interface ContactInfo {
   fullName: string;
@@ -110,7 +121,7 @@ export type SectionId =
   | "publications"
   | "languages"
   | "awards"
-  | string; // for custom sections
+  | string;
 
 export interface ResumeSection {
   id: SectionId;

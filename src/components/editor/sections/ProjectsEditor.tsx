@@ -27,14 +27,14 @@ function ProjectBulletEditor({
   return (
     <div className="group flex items-start gap-2">
       <div className="flex-1 relative">
-        <div className="absolute left-3 top-2.5 text-slate-600 text-sm select-none">•</div>
+        <div className="absolute left-3 top-2.5 text-gray-400 text-sm select-none">•</div>
         <textarea
           ref={textareaRef}
           value={bullet.content}
           onChange={handleChange}
           rows={1}
           placeholder="Describe a feature, impact, or technical accomplishment…"
-          className="w-full resize-none bg-white/4 border border-white/5 rounded-xl pl-7 pr-10 py-2.5 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:border-violet-500/40 transition-colors leading-relaxed overflow-hidden"
+          className="w-full resize-none bg-white border border-gray-200 rounded-xl pl-7 pr-10 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-rose-500/40 transition-colors leading-relaxed overflow-hidden"
           style={{ minHeight: "42px" }}
         />
       </div>
@@ -42,7 +42,7 @@ function ProjectBulletEditor({
         onClick={onRemove}
         className="opacity-0 group-hover:opacity-100 transition-opacity mt-2 shrink-0 w-6 h-6 flex items-center justify-center hover:bg-red-500/15 rounded-lg"
       >
-        <Trash2 className="w-3 h-3 text-slate-600 hover:text-red-400 transition-colors" />
+        <Trash2 className="w-3 h-3 text-gray-400 hover:text-red-600 transition-colors" />
       </button>
     </div>
   );
@@ -58,11 +58,11 @@ export default function ProjectsEditor() {
     <div className="space-y-5">
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white mb-1">Projects</h2>
-          <p className="text-sm text-slate-500">Side projects, open source, and personal work. Show range and depth.</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Projects</h2>
+          <p className="text-sm text-gray-500">Side projects, open source, and personal work. Show range and depth.</p>
         </div>
         <button onClick={addProject}
-          className="flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-3 py-1.5 rounded-xl transition-all font-medium shrink-0"
+          className="flex items-center gap-1.5 text-xs bg-rose-600 hover:bg-rose-500 text-gray-900 px-3 py-1.5 rounded-xl transition-all font-medium shrink-0"
         >
           <Plus className="w-3.5 h-3.5" /> Add Project
         </button>
@@ -73,11 +73,11 @@ export default function ProjectsEditor() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             className="flex flex-col items-center justify-center py-12 text-center"
           >
-            <div className="w-12 h-12 rounded-2xl bg-violet-500/10 flex items-center justify-center mb-3">
+            <div className="w-12 h-12 rounded-2xl bg-rose-100 flex items-center justify-center mb-3">
               <span className="text-2xl">🚀</span>
             </div>
-            <p className="text-sm text-slate-500 mb-1">No projects yet</p>
-            <p className="text-xs text-slate-600">Projects prove you can build independently. Always include them.</p>
+            <p className="text-sm text-gray-500 mb-1">No projects yet</p>
+            <p className="text-xs text-gray-400">Projects prove you can build independently. Always include them.</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -88,7 +88,7 @@ export default function ProjectsEditor() {
             <motion.div key={proj.id}
               initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, x: -10 }} transition={{ delay: i * 0.04 }}
-              className="glass rounded-2xl border border-white/5 overflow-hidden group"
+              className="glass rounded-2xl border border-gray-200 overflow-hidden group"
             >
               {/* Header row */}
               <div className="p-4 space-y-3">
@@ -107,16 +107,16 @@ export default function ProjectsEditor() {
                   <button onClick={() => removeProject(proj.id)}
                     className="opacity-0 group-hover:opacity-100 transition-opacity mt-5 w-6 h-6 flex items-center justify-center hover:bg-red-500/15 rounded-lg shrink-0"
                   >
-                    <Trash2 className="w-3.5 h-3.5 text-slate-600 hover:text-red-400 transition-colors" />
+                    <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-600 transition-colors" />
                   </button>
                 </div>
 
                 {/* Bullets */}
-                <div className="pt-1 border-t border-white/5">
+                <div className="pt-1 border-t border-gray-200">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Highlights</p>
+                    <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">Highlights</p>
                     <button onClick={() => addProjectBullet(proj.id)}
-                      className="flex items-center gap-1 text-[10px] text-violet-400 hover:text-violet-300 bg-violet-500/10 hover:bg-violet-500/20 px-2.5 py-1 rounded-lg transition-all"
+                      className="flex items-center gap-1 text-[10px] text-rose-600 hover:text-rose-700 bg-rose-100 hover:bg-rose-200 px-2.5 py-1 rounded-lg transition-all"
                     >
                       <Plus className="w-3 h-3" /> Add bullet
                     </button>
@@ -133,7 +133,7 @@ export default function ProjectsEditor() {
                       ))}
                     </AnimatePresence>
                     {proj.bullets.length === 0 && (
-                      <p className="text-xs text-slate-600 italic pl-2">Click "Add bullet" to describe impact…</p>
+                      <p className="text-xs text-gray-400 italic pl-2">Click "Add bullet" to describe impact…</p>
                     )}
                   </div>
                 </div>

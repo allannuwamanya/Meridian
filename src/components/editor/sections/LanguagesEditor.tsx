@@ -10,31 +10,31 @@ export default function LanguagesEditor() {
     <div className="space-y-5">
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white mb-1">Languages</h2>
-          <p className="text-sm text-slate-500">Be honest about proficiency — it will be verified.</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Languages</h2>
+          <p className="text-sm text-gray-500">Be honest about proficiency — it will be verified.</p>
         </div>
-        <button onClick={addLanguage} className="flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-3 py-1.5 rounded-xl transition-all font-medium">
+        <button onClick={addLanguage} className="flex items-center gap-1.5 text-xs bg-rose-600 hover:bg-rose-500 text-gray-900 px-3 py-1.5 rounded-xl transition-all font-medium">
           <Plus className="w-3.5 h-3.5" /> Add
         </button>
       </div>
       <div className="space-y-2">
         {resume.languages.map((lang) => (
-          <div key={lang.id} className="glass rounded-2xl px-4 py-3 flex items-center gap-3 border border-white/5 group">
+          <div key={lang.id} className="glass rounded-2xl px-4 py-3 flex items-center gap-3 border border-gray-200 group">
             <input
               value={lang.name}
               onChange={(e) => updateLanguage(lang.id, { name: e.target.value })}
               placeholder="e.g. Spanish"
-              className="flex-1 text-sm bg-transparent outline-none text-slate-200 placeholder:text-slate-600 min-w-0"
+              className="flex-1 text-sm bg-transparent outline-none text-gray-800 placeholder:text-gray-400 min-w-0"
             />
             <select
               value={lang.proficiency}
               onChange={(e) => updateLanguage(lang.id, { proficiency: e.target.value as any })}
-              className="text-xs text-slate-400 bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 outline-none focus:border-violet-500/40 transition-colors"
+              className="text-xs text-gray-500 bg-gray-50 border border-gray-300 rounded-xl px-3 py-1.5 outline-none focus:border-rose-500/40 transition-colors"
             >
               {PROFICIENCY_LEVELS.map((p) => <option key={p} className="bg-[#18181f]">{p}</option>)}
             </select>
             <button onClick={() => removeLanguage(lang.id)} className="opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 flex items-center justify-center hover:bg-red-500/15 rounded-lg">
-              <Trash2 className="w-3.5 h-3.5 text-slate-600 hover:text-red-400 transition-colors" />
+              <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-600 transition-colors" />
             </button>
           </div>
         ))}

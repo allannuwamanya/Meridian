@@ -42,69 +42,69 @@ export default function JobTargetModal() {
               {/* Header */}
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-violet-500/20 flex items-center justify-center">
-                    <Target className="w-4 h-4 text-violet-400" />
+                  <div className="w-8 h-8 rounded-xl bg-rose-200 flex items-center justify-center">
+                    <Target className="w-4 h-4 text-rose-600" />
                   </div>
                   <div>
-                    <h3 className="text-base font-semibold text-white">Job Target</h3>
-                    <p className="text-xs text-slate-500">AI uses this to tailor every suggestion</p>
+                    <h3 className="text-base font-semibold text-gray-900">Job Target</h3>
+                    <p className="text-xs text-gray-500">AI uses this to tailor every suggestion</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowJobTargetModal(false)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  <X className="w-4 h-4 text-slate-400" />
+                  <X className="w-4 h-4 text-gray-500" />
                 </button>
               </div>
 
               <div className="space-y-4">
                 {/* Role */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                  <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
                     <Briefcase className="w-3 h-3" /> Target Role
                   </label>
                   <input
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
                     placeholder="e.g. Senior Product Manager"
-                    className="w-full bg-white/4 border border-white/8 rounded-xl px-3 py-2.5 text-sm text-slate-200 placeholder:text-slate-600 outline-none focus:border-violet-500/40 transition-colors"
+                    className="w-full bg-white border border-gray-300 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 outline-none focus:border-rose-500/40 transition-colors"
                   />
                 </div>
 
                 {/* Company */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                  <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
                     <Building2 className="w-3 h-3" /> Target Company
                   </label>
                   <input
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
                     placeholder="e.g. Stripe, Figma, OpenAI…"
-                    className="w-full bg-white/4 border border-white/8 rounded-xl px-3 py-2.5 text-sm text-slate-200 placeholder:text-slate-600 outline-none focus:border-violet-500/40 transition-colors"
+                    className="w-full bg-white border border-gray-300 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 outline-none focus:border-rose-500/40 transition-colors"
                   />
                 </div>
 
                 {/* Job Description */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                  <label className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
                     <FileText className="w-3 h-3" /> Job Description
-                    <span className="text-slate-600 normal-case font-normal">(paste the full JD)</span>
+                    <span className="text-gray-400 normal-case font-normal">(paste the full JD)</span>
                   </label>
                   <textarea
                     value={jd}
                     onChange={(e) => setJd(e.target.value)}
                     rows={7}
                     placeholder="Paste the full job description here — AI will use it for keyword matching, skill suggestions, and summary tailoring…"
-                    className="w-full bg-white/4 border border-white/8 rounded-xl px-3 py-2.5 text-sm text-slate-300 placeholder:text-slate-600 outline-none focus:border-violet-500/40 transition-colors resize-none leading-relaxed"
+                    className="w-full bg-white border border-gray-300 rounded-xl px-3 py-2.5 text-sm text-gray-700 placeholder:text-gray-400 outline-none focus:border-rose-500/40 transition-colors resize-none leading-relaxed"
                   />
-                  <p className="text-xs text-slate-600">{jd.length} characters</p>
+                  <p className="text-xs text-gray-400">{jd.length} characters</p>
                 </div>
 
                 {/* Save */}
                 <button
                   onClick={handleSave}
-                  className="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-500 text-white font-semibold py-3 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(124,58,237,0.4)]"
+                  className="w-full flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-500 text-gray-900 font-semibold py-3 rounded-xl transition-all hover:shadow-[0_0_20px_rgba(124,58,237,0.4)]"
                 >
                   <Save className="w-4 h-4" />
                   Save & Activate AI Context

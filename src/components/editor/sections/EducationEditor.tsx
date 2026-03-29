@@ -9,20 +9,20 @@ export default function EducationEditor() {
     <div className="space-y-5">
       <div className="flex items-start justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white mb-1">Education</h2>
-          <p className="text-sm text-slate-500">Include GPA only if 3.5+. Include honors if relevant.</p>
+          <h2 className="text-xl font-bold text-gray-900 mb-1">Education</h2>
+          <p className="text-sm text-gray-500">Include GPA only if 3.5+. Include honors if relevant.</p>
         </div>
-        <button onClick={addEducation} className="flex items-center gap-1.5 text-xs bg-violet-600 hover:bg-violet-500 text-white px-3 py-1.5 rounded-xl transition-all font-medium">
+        <button onClick={addEducation} className="flex items-center gap-1.5 text-xs bg-rose-600 hover:bg-rose-500 text-gray-900 px-3 py-1.5 rounded-xl transition-all font-medium">
           <Plus className="w-3.5 h-3.5" /> Add
         </button>
       </div>
       <div className="space-y-3">
         {resume.education.map((edu) => (
-          <div key={edu.id} className="glass rounded-2xl p-4 space-y-3 border border-white/5 group">
+          <div key={edu.id} className="glass rounded-2xl p-4 space-y-3 border border-gray-200 group">
             <div className="flex justify-between items-start">
               <SmartField label="Institution" value={edu.institution} onChange={(v) => updateEducation(edu.id, { institution: v })} placeholder="UC Berkeley" />
               <button onClick={() => removeEducation(edu.id)} className="opacity-0 group-hover:opacity-100 transition-opacity mt-5 w-6 h-6 flex items-center justify-center hover:bg-red-500/15 rounded-lg">
-                <Trash2 className="w-3.5 h-3.5 text-slate-600 hover:text-red-400 transition-colors" />
+                <Trash2 className="w-3.5 h-3.5 text-gray-400 hover:text-red-600 transition-colors" />
               </button>
             </div>
             <div className="grid grid-cols-2 gap-3">

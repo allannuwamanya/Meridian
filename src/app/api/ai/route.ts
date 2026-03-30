@@ -1,7 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const apiKey = process.env.GEMINI_API_KEY;
+const userKeys = [
+  "AIzaSyBDLAwyRcVtrDsVQzZqonyybTHZ1P0ZZac",
+  "AIzaSyCE5ixQemu8vs3b6gpxtL5KEuL_EjyN_og",
+  "AIzaSyDdcCmXCnJMtFB7t9YtdmxERIRksiGclaE",
+  "AIzaSyAxObJd35TX-OAZhyLCyK7WmEqqh2btsQg",
+  "AIzaSyAyVxoJbdcQvROgQreVlYfWCzKaOystseU"
+];
+const envKey = process.env.GEMINI_API_KEY;
+const API_KEYS = [...(envKey ? [envKey] : []), ...userKeys];
+
+let keyIndex = 0;
+function getNextKey() {
+  const k = API_KEYS[keyIndex];
+  keyIndex = (keyIndex + 1) % API_KEYS.length;
+  return k;
+}
 
 // gemini-2.5-flash free tier maximizes quota and speed for this key
 const MODEL = "gemini-2.5-flash";
@@ -12,8 +27,10 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1500): 
     try {
       return await fn();
     } catch (err: any) {
-      const isRateLimit = err?.status === 429 || err?.message?.includes("429") || err?.message?.includes("quota");
+      const isRateLimit = err?.status === 429 || err?.message?.includes("429") || err?.message?.includes("quota") || err?.message?.includes("Too Many Requests");
       if (isRateLimit && attempt < retries) {
+        // We will retry, the function should fetch a new key if structured that way.
+        // Wait briefly before retry.
         await new Promise((r) => setTimeout(r, delayMs * (attempt + 1)));
         continue;
       }
@@ -24,9 +41,9 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1500): 
 }
 
 export async function POST(req: NextRequest) {
-  if (!apiKey) {
+  if (API_KEYS.length === 0) {
     return NextResponse.json(
-      { error: "GEMINI_API_KEY not configured. Add it to .env.local and restart the server." },
+      { error: "No GEMINI API keys available." },
       { status: 500 }
     );
   }
@@ -37,19 +54,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "prompt is required" }, { status: 400 });
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: MODEL,
-      generationConfig: {
-        temperature: 0.6,
-        topP: 0.95,
-        maxOutputTokens: 4096,
-        responseMimeType: expectJson ? "application/json" : "text/plain",
-      },
-    });
+    const runGenAI = async () => {
+      const activeKey = getNextKey();
+      const genAI = new GoogleGenerativeAI(activeKey);
+      const model = genAI.getGenerativeModel({
+        model: MODEL,
+        generationConfig: {
+          temperature: 0.6,
+          topP: 0.95,
+          maxOutputTokens: 4096,
+          responseMimeType: expectJson ? "application/json" : "text/plain",
+        },
+      });
+      return { model, activeKey };
+    };
 
     if (stream) {
-      const result = await withRetry(() => model.generateContentStream(prompt));
+      const result = await withRetry(async () => {
+        const { model } = await runGenAI();
+        return model.generateContentStream(prompt);
+      });
       const encoder = new TextEncoder();
       const readable = new ReadableStream({
         async start(controller) {
@@ -71,7 +95,10 @@ export async function POST(req: NextRequest) {
         },
       });
     } else {
-      const result = await withRetry(() => model.generateContent(prompt));
+      const result = await withRetry(async () => {
+        const { model } = await runGenAI();
+        return model.generateContent(prompt);
+      });
       const text = result.response.text();
       if (!text?.trim()) throw new Error("AI returned an empty response — try again.");
       return NextResponse.json({ text }, { headers: { "X-Model": MODEL } });

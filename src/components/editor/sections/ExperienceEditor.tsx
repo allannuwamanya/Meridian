@@ -337,6 +337,17 @@ function ExperienceCard({ exp }: { exp: WorkExperience }) {
                       ? <><Loader2 className="w-2.5 h-2.5 animate-spin" /> Enhancing…</>
                       : "✦ Enhance all bullets"}
                   </button>
+                  
+                  {/* Quantification Lab */}
+                  <button
+                    onClick={() => {
+                      const evt = new CustomEvent("open-quant-lab", { detail: { expId: exp.id } });
+                      window.dispatchEvent(evt);
+                    }}
+                    className="text-[10px] px-2.5 py-1 rounded-lg transition-all border flex items-center gap-1 font-semibold bg-violet-50 hover:bg-violet-100 text-violet-700 border-violet-200 hover:border-violet-300"
+                  >
+                    🔬 Quantification Lab
+                  </button>
                 </div>
               </div>
             </div>

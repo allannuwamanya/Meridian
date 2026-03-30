@@ -7,10 +7,23 @@ export type TemplateId =
   | "compact"
   | "bold"
   | "sidebar"
+  | "timeline"
   | "creative"
   | "academic"
   | "career-changer"
   | "international";
+
+export type IndustryMode =
+  | "general"
+  | "tech"
+  | "healthcare"
+  | "executive"
+  | "academic"
+  | "creative"
+  | "federal"
+  | "finance"
+  | "legal"
+  | "marketing";
 
 export interface ContactInfo {
   fullName: string;
@@ -134,6 +147,11 @@ export interface ResumeData {
   id: string;
   title: string;
   templateId: TemplateId;
+  industryMode: IndustryMode;
+  design: {
+    fontFamily: string;
+    accentColor: string;
+  };
   contact: ContactInfo;
   summary: string;
   experience: WorkExperience[];
@@ -160,3 +178,48 @@ export interface AIVariant {
 }
 
 export type AIStatus = "idle" | "streaming" | "done" | "error";
+
+// Auto-Tailor types
+export interface TailoredBullet {
+  bulletId: string;
+  expId: string;
+  original: string;
+  rewritten: string;
+  reason: string;
+}
+
+// Quantification Lab types
+export interface QuantQuestion {
+  bulletId: string;
+  expId: string;
+  originalBullet: string;
+  questions: string[];
+}
+
+export interface QuantAnswer {
+  bulletId: string;
+  expId: string;
+  originalBullet: string;
+  answers: Record<string, string>;
+}
+
+// Career Agent types
+export interface EmailSequence {
+  day1: { subject: string; body: string };
+  day7: { subject: string; body: string };
+  day14: { subject: string; body: string };
+}
+
+export interface InterviewPack {
+  questions: Array<{ question: string; guidance: string; sampleAnswer: string }>;
+  keyThemes: string[];
+  redFlags: string[];
+}
+
+export interface SalaryRange {
+  low: number;
+  mid: number;
+  high: number;
+  currency: string;
+  context: string;
+}

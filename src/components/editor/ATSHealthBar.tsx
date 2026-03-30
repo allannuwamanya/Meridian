@@ -140,7 +140,20 @@ export default function ATSHealthBar() {
               <AlertTriangle className="w-2.5 h-2.5" /> {warns} warning{warns > 1 ? "s" : ""}
             </span>
           )}
-          {expanded ? <ChevronDown className="w-3.5 h-3.5 text-gray-400" /> : <ChevronUp className="w-3.5 h-3.5 text-gray-400" />}
+          
+          {(fails > 0 || warns > 0) && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                window.dispatchEvent(new CustomEvent("open-quant-lab"));
+              }}
+              className="ml-2 flex items-center gap-1 text-[10px] bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold px-2.5 py-1 rounded-lg border border-rose-200 transition-colors"
+            >
+               Fix with AI
+            </button>
+          )}
+
+          {expanded ? <ChevronDown className="w-3.5 h-3.5 text-gray-400 ml-1" /> : <ChevronUp className="w-3.5 h-3.5 text-gray-400 ml-1" />}
         </div>
       </button>
 

@@ -7,11 +7,17 @@ import TechnicalTemplate from "@/components/templates/Technical";
 import CompactTemplate from "@/components/templates/Compact";
 import BoldTemplate from "@/components/templates/Bold";
 import SidebarTemplate from "@/components/templates/Sidebar";
+import TimelineTemplate from "@/components/templates/Timeline";
 import { ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 
-const TEMPLATES: Record<string, React.ComponentType<{ resume: any }>> = {
+import AcademicTemplate from "@/components/templates/Academic";
+import CareerChangerTemplate from "@/components/templates/CareerChanger";
+import InternationalTemplate from "@/components/templates/International";
+import CreativeTemplate from "@/components/templates/Creative";
+
+const TEMPLATES: Record<string, React.ComponentType<{ resume: any; isPreview?: boolean; onSectionClick?: (id: string) => void }>> = {
   "modern-minimal": ModernMinimalTemplate,
   classic:          ClassicTemplate,
   executive:        ExecutiveTemplate,
@@ -19,13 +25,17 @@ const TEMPLATES: Record<string, React.ComponentType<{ resume: any }>> = {
   compact:          CompactTemplate,
   bold:             BoldTemplate,
   sidebar:          SidebarTemplate,
-  creative:         ModernMinimalTemplate, // placeholder
+  timeline:         TimelineTemplate,
+  academic:         AcademicTemplate,
+  "career-changer": CareerChangerTemplate,
+  international:    InternationalTemplate,
+  creative:         CreativeTemplate,
 };
 
 const ZOOM_STEPS = [0.42, 0.52, 0.62, 0.72, 0.82];
 
 export default function RightPreview() {
-  const { resume } = useResumeStore();
+  const { resume, setActiveSection } = useResumeStore();
   const Template = TEMPLATES[resume.templateId] ?? ModernMinimalTemplate;
   const [zoomIdx, setZoomIdx] = useState(1);
   const scale = ZOOM_STEPS[zoomIdx];
@@ -86,7 +96,7 @@ export default function RightPreview() {
               boxShadow: "0 4px 32px rgba(0,0,0,0.14)",
             }}
           >
-            <Template resume={resume} />
+            <Template resume={resume} isPreview={true} onSectionClick={setActiveSection} />
           </motion.div>
         </div>
       </div>

@@ -3,27 +3,21 @@ import { immer } from "zustand/middleware/immer";
 import { persist } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
 import {
-  ResumeData,
-  WorkExperience,
-  Education,
-  Project,
-  BulletPoint,
-  Certification,
-  VolunteerExperience,
-  Publication,
-  Language,
-  Award,
-  CustomSection,
-  SectionId,
-  TemplateId,
-  AIStatus,
-  AIVariant,
+  ResumeData, WorkExperience, Education, Project, BulletPoint,
+  Certification, VolunteerExperience, Publication, Language, Award,
+  CustomSection, SectionId, TemplateId, AIStatus, AIVariant, IndustryMode,
+  TailoredBullet,
 } from "@/types/resume";
 
-const DEFAULT_RESUME: ResumeData = {
+const DEFAULT_RESUME = (): ResumeData => ({
   id: uuidv4(),
   title: "My Resume",
   templateId: "modern-minimal",
+  industryMode: "general",
+  design: {
+    fontFamily: "'Inter', sans-serif",
+    accentColor: "#ef4444",
+  },
   contact: {
     fullName: "Alex Rivera",
     email: "alex.rivera@email.com",
@@ -89,9 +83,7 @@ const DEFAULT_RESUME: ResumeData = {
       url: "github.com/alexrivera/openbudget",
       startDate: "2023-01",
       endDate: "",
-      bullets: [
-        { id: uuidv4(), content: "Open-source budgeting tool with 2,400+ GitHub stars and 300+ monthly active users." },
-      ],
+      bullets: [{ id: uuidv4(), content: "Open-source budgeting tool with 2,400+ GitHub stars and 300+ monthly active users." }],
       skills: ["Next.js", "Supabase", "TypeScript"],
     },
   ],
@@ -122,21 +114,12 @@ const DEFAULT_RESUME: ResumeData = {
   targetRole: "",
   targetCompany: "",
   jobDescription: "",
-};
+});
 
 export type ActiveSection =
-  | "contact"
-  | "summary"
-  | "experience"
-  | "education"
-  | "skills"
-  | "projects"
-  | "certifications"
-  | "volunteering"
-  | "publications"
-  | "languages"
-  | "awards"
-  | string;
+  | "contact" | "summary" | "experience" | "education" | "skills"
+  | "projects" | "certifications" | "volunteering" | "publications"
+  | "languages" | "awards" | string;
 
 interface AIState {
   status: AIStatus;
@@ -148,18 +131,28 @@ interface AIState {
 
 interface ResumeStore {
   resume: ResumeData;
+  savedResumes: ResumeData[];
   activeSection: ActiveSection;
   activeExperienceId: string | null;
   isDirty: boolean;
   showJobTargetModal: boolean;
   ai: AIState;
 
+  // Multi-resume
+  createResume: () => void;
+  loadResume: (id: string) => void;
+  deleteResume: (id: string) => void;
+  duplicateResume: (id: string) => void;
+  saveCurrentResume: () => void;
+
   // Actions — Resume
   setResume: (data: ResumeData) => void;
   updateContact: (patch: Partial<ResumeData["contact"]>) => void;
   updateSummary: (summary: string) => void;
   updateTemplateId: (id: TemplateId) => void;
+  updateDesign: (patch: Partial<ResumeData["design"]>) => void;
   updateJobTarget: (patch: { targetRole?: string; targetCompany?: string; jobDescription?: string }) => void;
+  updateIndustryMode: (mode: IndustryMode) => void;
   markSaved: () => void;
 
   // Experience
@@ -170,6 +163,7 @@ interface ResumeStore {
   updateBullet: (experienceId: string, bulletId: string, content: string) => void;
   removeBullet: (experienceId: string, bulletId: string) => void;
   reorderBullets: (experienceId: string, newOrder: BulletPoint[]) => void;
+  applyTailoredBullets: (rewrites: TailoredBullet[]) => void;
 
   // Education
   addEducation: () => void;
@@ -213,6 +207,14 @@ interface ResumeStore {
   updateAward: (id: string, patch: Partial<Award>) => void;
   removeAward: (id: string) => void;
 
+  // Custom sections
+  addCustomSection: (title: string) => void;
+  updateCustomSection: (id: string, patch: Partial<CustomSection>) => void;
+  removeCustomSection: (id: string) => void;
+  addCustomBullet: (sectionId: string) => void;
+  updateCustomBullet: (sectionId: string, bulletId: string, content: string) => void;
+  removeCustomBullet: (sectionId: string, bulletId: string) => void;
+
   // UI
   setActiveSection: (section: ActiveSection) => void;
   setActiveExperience: (id: string | null) => void;
@@ -228,36 +230,98 @@ interface ResumeStore {
   clearAI: () => void;
 }
 
+const INITIAL_RESUME = DEFAULT_RESUME();
+
 export const useResumeStore = create<ResumeStore>()(
   persist(
-    immer((set) => ({
-      resume: DEFAULT_RESUME,
+    immer((set, get) => ({
+      resume: INITIAL_RESUME,
+      savedResumes: [INITIAL_RESUME],
       activeSection: "experience",
-      activeExperienceId: DEFAULT_RESUME.experience[0]?.id ?? null,
+      activeExperienceId: INITIAL_RESUME.experience[0]?.id ?? null,
       isDirty: false,
       showJobTargetModal: false,
       ai: { status: "idle", feature: null, targetId: null, variants: [], streamingContent: "" },
 
+      // ── Multi-resume ──────────────────────────────────────────────────────
+      createResume: () =>
+        set((s) => {
+          const r = DEFAULT_RESUME();
+          s.savedResumes.push(r);
+          s.resume = r;
+          s.activeSection = "experience";
+          s.activeExperienceId = r.experience[0]?.id ?? null;
+          s.isDirty = false;
+        }),
+
+      loadResume: (id) =>
+        set((s) => {
+          const found = s.savedResumes.find((r) => r.id === id);
+          if (found) {
+            s.resume = found;
+            s.activeSection = "experience";
+            s.activeExperienceId = found.experience[0]?.id ?? null;
+            s.isDirty = false;
+          }
+        }),
+
+      deleteResume: (id) =>
+        set((s) => {
+          s.savedResumes = s.savedResumes.filter((r) => r.id !== id);
+          // If deleting active, switch to first remaining
+          if (s.resume.id === id && s.savedResumes.length > 0) {
+            s.resume = s.savedResumes[0];
+          }
+        }),
+
+      duplicateResume: (id) =>
+        set((s) => {
+          const found = s.savedResumes.find((r) => r.id === id);
+          if (found) {
+            const copy: ResumeData = JSON.parse(JSON.stringify(found));
+            copy.id = uuidv4();
+            copy.title = `${found.title} (Copy)`;
+            copy.lastSaved = undefined;
+            s.savedResumes.push(copy);
+          }
+        }),
+
+      saveCurrentResume: () =>
+        set((s) => {
+          const idx = s.savedResumes.findIndex((r) => r.id === s.resume.id);
+          if (idx !== -1) {
+            s.savedResumes[idx] = JSON.parse(JSON.stringify(s.resume));
+          } else {
+            s.savedResumes.push(JSON.parse(JSON.stringify(s.resume)));
+          }
+          s.isDirty = false;
+          s.resume.lastSaved = new Date();
+        }),
+
+      // ── Resume ────────────────────────────────────────────────────────────
       setResume: (data) => set((s) => { s.resume = data; }),
       updateContact: (patch) => set((s) => { Object.assign(s.resume.contact, patch); s.isDirty = true; }),
       updateSummary: (summary) => set((s) => { s.resume.summary = summary; s.isDirty = true; }),
       updateTemplateId: (id) => set((s) => { s.resume.templateId = id; s.isDirty = true; }),
+      updateDesign: (patch) => set((s) => { Object.assign(s.resume.design, patch); s.isDirty = true; }),
       updateJobTarget: (patch) => set((s) => { Object.assign(s.resume, patch); s.isDirty = true; }),
-      markSaved: () => set((s) => { s.isDirty = false; s.resume.lastSaved = new Date(); }),
+      updateIndustryMode: (mode) => set((s) => { s.resume.industryMode = mode; s.isDirty = true; }),
+      markSaved: () => set((s) => {
+        s.isDirty = false;
+        s.resume.lastSaved = new Date();
+        // Sync active resume into savedResumes
+        const idx = s.savedResumes.findIndex((r) => r.id === s.resume.id);
+        if (idx !== -1) s.savedResumes[idx] = JSON.parse(JSON.stringify(s.resume));
+        else s.savedResumes.push(JSON.parse(JSON.stringify(s.resume)));
+      }),
 
+      // ── Experience ────────────────────────────────────────────────────────
       addExperience: () =>
         set((s) => {
           const newExp: WorkExperience = {
-            id: uuidv4(),
-            company: "",
-            role: "",
-            startDate: "",
-            endDate: "",
-            isCurrent: true,
-            location: "",
-            employmentType: "Full-time",
-            bullets: [{ id: uuidv4(), content: "" }],
-            skills: [],
+            id: uuidv4(), company: "", role: "", startDate: "", endDate: "",
+            isCurrent: true, location: "", employmentType: "Full-time",
+            bullets: [{ id: uuidv4(), content: "" }], skills: [],
           };
           s.resume.experience.unshift(newExp);
           s.activeExperienceId = newExp.id;
@@ -270,10 +334,7 @@ export const useResumeStore = create<ResumeStore>()(
           s.isDirty = true;
         }),
       removeExperience: (id) =>
-        set((s) => {
-          s.resume.experience = s.resume.experience.filter((e) => e.id !== id);
-          s.isDirty = true;
-        }),
+        set((s) => { s.resume.experience = s.resume.experience.filter((e) => e.id !== id); s.isDirty = true; }),
       addBullet: (experienceId) =>
         set((s) => {
           const exp = s.resume.experience.find((e) => e.id === experienceId);
@@ -283,10 +344,7 @@ export const useResumeStore = create<ResumeStore>()(
       updateBullet: (experienceId, bulletId, content) =>
         set((s) => {
           const exp = s.resume.experience.find((e) => e.id === experienceId);
-          if (exp) {
-            const b = exp.bullets.find((b) => b.id === bulletId);
-            if (b) b.content = content;
-          }
+          if (exp) { const b = exp.bullets.find((b) => b.id === bulletId); if (b) b.content = content; }
           s.isDirty = true;
         }),
       removeBullet: (experienceId, bulletId) =>
@@ -300,7 +358,19 @@ export const useResumeStore = create<ResumeStore>()(
           const exp = s.resume.experience.find((e) => e.id === experienceId);
           if (exp) exp.bullets = newOrder;
         }),
+      applyTailoredBullets: (rewrites) =>
+        set((s) => {
+          rewrites.forEach(({ bulletId, expId, rewritten }) => {
+            const exp = s.resume.experience.find((e) => e.id === expId);
+            if (exp) {
+              const b = exp.bullets.find((b) => b.id === bulletId);
+              if (b) b.content = rewritten;
+            }
+          });
+          s.isDirty = true;
+        }),
 
+      // ── Education ─────────────────────────────────────────────────────────
       addEducation: () =>
         set((s) => {
           s.resume.education.push({ id: uuidv4(), institution: "", degree: "", field: "", startDate: "", endDate: "" });
@@ -315,9 +385,11 @@ export const useResumeStore = create<ResumeStore>()(
       removeEducation: (id) =>
         set((s) => { s.resume.education = s.resume.education.filter((e) => e.id !== id); s.isDirty = true; }),
 
+      // ── Skills ────────────────────────────────────────────────────────────
       addSkill: (skill) => set((s) => { if (!s.resume.skills.includes(skill)) s.resume.skills.push(skill); s.isDirty = true; }),
       removeSkill: (skill) => set((s) => { s.resume.skills = s.resume.skills.filter((sk) => sk !== skill); s.isDirty = true; }),
 
+      // ── Projects ──────────────────────────────────────────────────────────
       addProject: () =>
         set((s) => {
           s.resume.projects.push({ id: uuidv4(), name: "", role: "", startDate: "", endDate: "", bullets: [{ id: uuidv4(), content: "" }], skills: [] });
@@ -339,10 +411,7 @@ export const useResumeStore = create<ResumeStore>()(
       updateProjectBullet: (projectId, bulletId, content) =>
         set((s) => {
           const proj = s.resume.projects.find((p) => p.id === projectId);
-          if (proj) {
-            const b = proj.bullets.find((b) => b.id === bulletId);
-            if (b) b.content = content;
-          }
+          if (proj) { const b = proj.bullets.find((b) => b.id === bulletId); if (b) b.content = content; }
           s.isDirty = true;
         }),
       removeProjectBullet: (projectId, bulletId) =>
@@ -352,11 +421,9 @@ export const useResumeStore = create<ResumeStore>()(
           s.isDirty = true;
         }),
 
+      // ── Certifications ────────────────────────────────────────────────────
       addCertification: () =>
-        set((s) => {
-          s.resume.certifications.push({ id: uuidv4(), name: "", issuer: "", date: "" });
-          s.isDirty = true;
-        }),
+        set((s) => { s.resume.certifications.push({ id: uuidv4(), name: "", issuer: "", date: "" }); s.isDirty = true; }),
       updateCertification: (id, patch) =>
         set((s) => {
           const idx = s.resume.certifications.findIndex((c) => c.id === id);
@@ -366,11 +433,9 @@ export const useResumeStore = create<ResumeStore>()(
       removeCertification: (id) =>
         set((s) => { s.resume.certifications = s.resume.certifications.filter((c) => c.id !== id); s.isDirty = true; }),
 
+      // ── Volunteering ──────────────────────────────────────────────────────
       addVolunteering: () =>
-        set((s) => {
-          s.resume.volunteering.push({ id: uuidv4(), organization: "", role: "", startDate: "", endDate: "", description: "" });
-          s.isDirty = true;
-        }),
+        set((s) => { s.resume.volunteering.push({ id: uuidv4(), organization: "", role: "", startDate: "", endDate: "", description: "" }); s.isDirty = true; }),
       updateVolunteering: (id, patch) =>
         set((s) => {
           const idx = s.resume.volunteering.findIndex((v) => v.id === id);
@@ -380,11 +445,9 @@ export const useResumeStore = create<ResumeStore>()(
       removeVolunteering: (id) =>
         set((s) => { s.resume.volunteering = s.resume.volunteering.filter((v) => v.id !== id); s.isDirty = true; }),
 
+      // ── Publications ──────────────────────────────────────────────────────
       addPublication: () =>
-        set((s) => {
-          s.resume.publications.push({ id: uuidv4(), title: "", publisher: "", date: "" });
-          s.isDirty = true;
-        }),
+        set((s) => { s.resume.publications.push({ id: uuidv4(), title: "", publisher: "", date: "" }); s.isDirty = true; }),
       updatePublication: (id, patch) =>
         set((s) => {
           const idx = s.resume.publications.findIndex((p) => p.id === id);
@@ -394,6 +457,7 @@ export const useResumeStore = create<ResumeStore>()(
       removePublication: (id) =>
         set((s) => { s.resume.publications = s.resume.publications.filter((p) => p.id !== id); s.isDirty = true; }),
 
+      // ── Languages ─────────────────────────────────────────────────────────
       addLanguage: () =>
         set((s) => { s.resume.languages.push({ id: uuidv4(), name: "", proficiency: "Conversational" }); s.isDirty = true; }),
       updateLanguage: (id, patch) =>
@@ -405,11 +469,9 @@ export const useResumeStore = create<ResumeStore>()(
       removeLanguage: (id) =>
         set((s) => { s.resume.languages = s.resume.languages.filter((l) => l.id !== id); s.isDirty = true; }),
 
+      // ── Awards ────────────────────────────────────────────────────────────
       addAward: () =>
-        set((s) => {
-          s.resume.awards.push({ id: uuidv4(), title: "", issuer: "", date: "" });
-          s.isDirty = true;
-        }),
+        set((s) => { s.resume.awards.push({ id: uuidv4(), title: "", issuer: "", date: "" }); s.isDirty = true; }),
       updateAward: (id, patch) =>
         set((s) => {
           const idx = s.resume.awards.findIndex((a) => a.id === id);
@@ -419,6 +481,53 @@ export const useResumeStore = create<ResumeStore>()(
       removeAward: (id) =>
         set((s) => { s.resume.awards = s.resume.awards.filter((a) => a.id !== id); s.isDirty = true; }),
 
+      // ── Custom Sections ───────────────────────────────────────────────────
+      addCustomSection: (title) =>
+        set((s) => {
+          const id = uuidv4();
+          s.resume.customSections.push({ id, title, bullets: [{ id: uuidv4(), content: "" }] });
+          s.resume.sectionOrder.push({ id, label: title, visible: true, isCustom: true });
+          s.activeSection = id;
+          s.isDirty = true;
+        }),
+      updateCustomSection: (id, patch) =>
+        set((s) => {
+          const idx = s.resume.customSections.findIndex((cs) => cs.id === id);
+          if (idx !== -1) Object.assign(s.resume.customSections[idx], patch);
+          // Also update sectionOrder label
+          if (patch.title) {
+            const sec = s.resume.sectionOrder.find((so) => so.id === id);
+            if (sec) sec.label = patch.title;
+          }
+          s.isDirty = true;
+        }),
+      removeCustomSection: (id) =>
+        set((s) => {
+          s.resume.customSections = s.resume.customSections.filter((cs) => cs.id !== id);
+          s.resume.sectionOrder = s.resume.sectionOrder.filter((so) => so.id !== id);
+          if (s.activeSection === id) s.activeSection = "experience";
+          s.isDirty = true;
+        }),
+      addCustomBullet: (sectionId) =>
+        set((s) => {
+          const cs = s.resume.customSections.find((c) => c.id === sectionId);
+          if (cs) cs.bullets.push({ id: uuidv4(), content: "" });
+          s.isDirty = true;
+        }),
+      updateCustomBullet: (sectionId, bulletId, content) =>
+        set((s) => {
+          const cs = s.resume.customSections.find((c) => c.id === sectionId);
+          if (cs) { const b = cs.bullets.find((b) => b.id === bulletId); if (b) b.content = content; }
+          s.isDirty = true;
+        }),
+      removeCustomBullet: (sectionId, bulletId) =>
+        set((s) => {
+          const cs = s.resume.customSections.find((c) => c.id === sectionId);
+          if (cs) cs.bullets = cs.bullets.filter((b) => b.id !== bulletId);
+          s.isDirty = true;
+        }),
+
+      // ── UI ────────────────────────────────────────────────────────────────
       setActiveSection: (section) => set((s) => { s.activeSection = section; }),
       setActiveExperience: (id) => set((s) => { s.activeExperienceId = id; }),
       toggleSectionVisibility: (id) =>
@@ -429,19 +538,16 @@ export const useResumeStore = create<ResumeStore>()(
       reorderSections: (newOrder) => set((s) => { s.resume.sectionOrder = newOrder; s.isDirty = true; }),
       setShowJobTargetModal: (show) => set((s) => { s.showJobTargetModal = show; }),
 
+      // ── AI ────────────────────────────────────────────────────────────────
       setAIStatus: (status) => set((s) => { s.ai.status = status; }),
       setAIFeature: (feature, targetId = null) => set((s) => { s.ai.feature = feature; s.ai.targetId = targetId; s.ai.streamingContent = ""; }),
       appendAIStream: (token) => set((s) => { s.ai.streamingContent += token; }),
       setAIVariants: (variants) => set((s) => { s.ai.variants = variants; }),
-      clearAI: () =>
-        set((s) => {
-          s.ai = { status: "idle", feature: null, targetId: null, variants: [], streamingContent: "" };
-        }),
+      clearAI: () => set((s) => { s.ai = { status: "idle", feature: null, targetId: null, variants: [], streamingContent: "" }; }),
     })),
     {
       name: "meridian-resume-v1",
-      // Only persist the resume data, not UI/AI transient state
-      partialize: (state) => ({ resume: state.resume }),
+      partialize: (state) => ({ resume: state.resume, savedResumes: state.savedResumes }),
     }
   )
 );

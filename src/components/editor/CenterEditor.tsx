@@ -30,8 +30,10 @@ const SECTION_MAP: Record<string, React.ComponentType> = {
 };
 
 export default function CenterEditor() {
-  const { activeSection } = useResumeStore();
+  const { activeSection, resume } = useResumeStore();
   const Editor = SECTION_MAP[activeSection];
+  const isCustom = !Editor && resume.customSections.some(cs => cs.id === activeSection);
+  const CustomEditor = isCustom ? require("./sections/CustomSectionEditor").CustomSectionEditor : null;
 
   return (
     <div className="flex flex-col h-full relative">
@@ -50,6 +52,10 @@ export default function CenterEditor() {
             {Editor ? (
               <div className="space-y-8 pb-4">
                 <Editor />
+              </div>
+            ) : CustomEditor ? (
+              <div className="space-y-8 pb-4">
+                <CustomEditor sectionId={activeSection} />
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center h-64 text-gray-400">

@@ -3,9 +3,25 @@ import LeftNav from "@/components/editor/LeftNav";
 import CenterEditor from "@/components/editor/CenterEditor";
 import RightPreview from "@/components/editor/RightPreview";
 import TopBar from "@/components/editor/TopBar";
+import { QuantLabModal } from "@/components/ui/QuantLabModal";
+import { useQuantLab } from "@/hooks/useQuantLab";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 
 export default function EditorPage() {
+  const quantLab = useQuantLab();
+  const [showQuantLab, setShowQuantLab] = useState(false);
+
+  useEffect(() => {
+    const handleOpen = (e: any) => {
+      const expId = e.detail?.expId;
+      setShowQuantLab(true);
+      quantLab.startLab(expId);
+    };
+    window.addEventListener("open-quant-lab", handleOpen);
+    return () => window.removeEventListener("open-quant-lab", handleOpen);
+  }, [quantLab]);
+
   return (
     <div className="h-screen flex flex-col bg-[#f7f7f8] overflow-hidden">
       <TopBar />
@@ -43,6 +59,8 @@ export default function EditorPage() {
         </motion.aside>
 
       </div>
+      
+      <QuantLabModal open={showQuantLab} onClose={() => setShowQuantLab(false)} quantLab={quantLab} />
     </div>
   );
 }

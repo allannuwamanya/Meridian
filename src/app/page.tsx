@@ -52,7 +52,7 @@ export default function HomePage() {
           <span className="text-sm text-gray-500 hidden md:block">Build your best resume, for free</span>
           <button
             id="nav-cta"
-            onClick={() => router.push("/editor")}
+            onClick={() => router.push("/dashboard")}
             className="flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 shadow-brand hover:shadow-brand-lg"
           >
             Get Started <ArrowRight className="w-4 h-4" />
@@ -97,7 +97,7 @@ export default function HomePage() {
               id="hero-cta-primary"
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => router.push("/editor")}
+              onClick={() => router.push("/dashboard")}
               className="flex items-center gap-2.5 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-semibold px-8 py-4 rounded-2xl text-lg shadow-brand-lg hover:shadow-[0_12px_48px_rgba(225,29,72,0.45)] transition-all duration-300"
             >
               <Sparkles className="w-5 h-5" />
@@ -186,7 +186,7 @@ export default function HomePage() {
           <p className="text-rose-100 text-base mb-8">Start building in seconds. No account required.</p>
           <button
             id="footer-cta"
-            onClick={() => router.push("/editor")}
+            onClick={() => router.push("/dashboard")}
             className="flex items-center gap-2 bg-white text-rose-600 font-semibold px-8 py-3.5 rounded-xl mx-auto hover:bg-rose-50 transition-all duration-200 shadow-sm"
           >
             <Sparkles className="w-5 h-5" />

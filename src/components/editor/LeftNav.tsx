@@ -6,7 +6,8 @@ import {
 } from "lucide-react";
 import { useResumeStore, ActiveSection } from "@/store/useResumeStore";
 import { cn } from "@/lib/utils";
-import { SectionId, ResumeData } from "@/types/resume";
+import { SectionId, ResumeData, IndustryMode } from "@/types/resume";
+import { INDUSTRY_LABELS } from "@/lib/industryPrompts";
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor,
   useSensor, useSensors, DragEndEvent,
@@ -142,7 +143,7 @@ function SortableSectionItem({ section, isActive, score }: {
 
 // ─── Main LeftNav ─────────────────────────────────────────────────────────────
 export default function LeftNav() {
-  const { resume, activeSection, reorderSections } = useResumeStore();
+  const { resume, activeSection, reorderSections, updateIndustryMode } = useResumeStore();
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -224,20 +225,35 @@ export default function LeftNav() {
 
       {/* Add custom section */}
       <div className="px-3 pt-2 border-t border-gray-100">
-        <button className="w-full flex items-center gap-2 text-xs text-gray-500 hover:text-rose-600 px-3 py-2 rounded-xl hover:bg-rose-50 transition-all border border-dashed border-gray-200 hover:border-rose-300">
+        <button
+          onClick={() => {
+            const numCustoms = resume.customSections.length;
+            const newTitle = `Custom Section ${numCustoms + 1}`;
+            useResumeStore.getState().addCustomSection(newTitle);
+          }}
+          className="w-full flex items-center gap-2 text-xs text-gray-500 hover:text-rose-600 px-3 py-2 rounded-xl hover:bg-rose-50 transition-all border border-dashed border-gray-200 hover:border-rose-300"
+        >
           <Plus className="w-3.5 h-3.5" />
           Add custom section
         </button>
       </div>
 
-      {/* Role category selector */}
-      <div className="px-3 pt-3">
-        <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-2 px-1 font-semibold">Role Category</p>
-        <select className="w-full text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-rose-500/50 focus:ring-2 focus:ring-rose-500/10 transition-colors">
-          {["Software Engineer", "Designer", "Marketer", "Executive", "Recent Graduate", "Career Changer", "Academic"].map((r) => (
-            <option key={r} value={r}>{r}</option>
+      {/* Role Category selector */}
+      <div className="px-3 pt-3 pb-2">
+        <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-2 px-1 font-semibold flex items-center justify-between">
+          <span>AI Context Mode</span>
+          {resume.industryMode !== "general" && <span className="bg-rose-100 text-rose-600 px-1.5 py-[1px] rounded text-[8px] font-bold">ACTIVE</span>}
+        </p>
+        <select
+          value={resume.industryMode || "general"}
+          onChange={(e) => updateIndustryMode(e.target.value as IndustryMode)}
+          className="w-full text-xs text-gray-700 font-medium bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 outline-none focus:border-rose-500/50 focus:ring-2 focus:ring-rose-500/10 transition-colors"
+        >
+          {Object.entries(INDUSTRY_LABELS).map(([key, label]) => (
+            <option key={key} value={key}>{String(label)}</option>
           ))}
         </select>
+        <p className="text-[9px] text-gray-400 mt-1.5 px-1 leading-tight">Tunes AI tone and vocab to your field.</p>
       </div>
     </div>
   );

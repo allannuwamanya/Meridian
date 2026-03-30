@@ -175,6 +175,59 @@ function SidebarPreview() {
   );
 }
 
+function TimelinePreview() {
+  return (
+    <svg viewBox="0 0 80 110" className="w-full h-full">
+      <rect width="80" height="110" fill="#ffffff" rx="2" />
+      {/* Header */}
+      <rect x="25" y="6" width="30" height="6" rx="1" fill="#111827" opacity="0.9" />
+      <rect x="18" y="14" width="44" height="2" rx="1" fill="#6b7280" opacity="0.6" />
+      <rect x="10" y="19" width="60" height="0.5" fill="#e5e7eb" />
+      {/* Timeline axis */}
+      <rect x="25" y="22" width="0.75" height="88" fill="#ef4444" />
+      
+      {/* Profile */}
+      <circle cx="25.375" cy="25" r="1.5" fill="#ef4444" />
+      <rect x="8" y="24" width="14" height="2" rx="1" fill="#111827" opacity="0.9" />
+      <rect x="30" y="24" width="40" height="2" rx="1" fill="#475569" opacity="0.6" />
+      <rect x="30" y="28" width="36" height="2" rx="1" fill="#475569" opacity="0.6" />
+
+      {/* Experience */}
+      <circle cx="25.375" cy="38" r="1.5" fill="#ef4444" />
+      <rect x="8" y="37" width="14" height="2" rx="1" fill="#111827" opacity="0.9" />
+      <rect x="8" y="40" width="12" height="2" rx="1" fill="#111827" opacity="0.9" />
+      
+      <rect x="30" y="37" width="30" height="2" rx="1" fill="#111827" opacity="0.8" />
+      <rect x="30" y="40" width="20" height="2" rx="1" fill="#111827" opacity="0.8" />
+      <rect x="30" y="43" width="24" height="1.5" rx="1" fill="#94a3b8" />
+      <rect x="30" y="47" width="40" height="1.5" rx="1" fill="#475569" opacity="0.6" />
+      <rect x="30" y="50" width="38" height="1.5" rx="1" fill="#475569" opacity="0.6" />
+      
+      <rect x="30" y="55" width="26" height="2" rx="1" fill="#111827" opacity="0.8" />
+      <rect x="30" y="58" width="18" height="2" rx="1" fill="#111827" opacity="0.8" />
+      <rect x="30" y="61" width="24" height="1.5" rx="1" fill="#94a3b8" />
+
+      {/* Education */}
+      <circle cx="25.375" cy="69" r="1.5" fill="#ef4444" />
+      <rect x="8" y="68" width="14" height="2" rx="1" fill="#111827" opacity="0.9" />
+      <rect x="30" y="68" width="32" height="2" rx="1" fill="#111827" opacity="0.8" />
+      <rect x="30" y="71" width="22" height="2" rx="1" fill="#111827" opacity="0.8" />
+      <rect x="30" y="74" width="24" height="1.5" rx="1" fill="#94a3b8" />
+
+      {/* Languages */}
+      <circle cx="25.375" cy="82" r="1.5" fill="#ef4444" />
+      <rect x="8" y="81" width="14" height="2" rx="1" fill="#111827" opacity="0.9" />
+      <rect x="30" y="81" width="12" height="1.5" rx="1" fill="#475569" />
+      <rect x="30" y="84" width="14" height="1" fill="#cbd5e1" />
+      <circle cx="40" cy="84.5" r="1" fill="#ef4444" />
+      
+      <rect x="48" y="81" width="12" height="1.5" rx="1" fill="#475569" />
+      <rect x="48" y="84" width="14" height="1" fill="#cbd5e1" />
+      <circle cx="56" cy="84.5" r="1" fill="#ef4444" />
+    </svg>
+  );
+}
+
 const TEMPLATES: TemplateInfo[] = [
   {
     id: "modern-minimal",
@@ -225,6 +278,41 @@ const TEMPLATES: TemplateInfo[] = [
     category: "New",
     preview: <SidebarPreview />,
   },
+  {
+    id: "timeline",
+    label: "Timeline",
+    description: "Distinctive two-column axis layout with an orange tracking line. Stand out uniquely.",
+    category: "Creative",
+    preview: <TimelinePreview />,
+  },
+  {
+    id: "academic",
+    label: "Academic",
+    description: "Classic serif typography with numbered bibliographies. Designed for higher education and research.",
+    category: "New",
+    preview: <ClassicPreview />,
+  },
+  {
+    id: "career-changer",
+    label: "Career Changer",
+    description: "Skills-first layout with a strong narrative focus. Perfect for pivoting into new industries.",
+    category: "New",
+    preview: <SidebarPreview />,
+  },
+  {
+    id: "international",
+    label: "International",
+    description: "Europass-inspired layout tailored for cross-border opportunities.",
+    category: "New",
+    preview: <MinimalPreview />,
+  },
+  {
+    id: "creative",
+    label: "Creative",
+    description: "Dark-mode sidebar with portfolio-first positioning. Ideal for designers.",
+    category: "Creative",
+    preview: <TechnicalPreview />,
+  },
 ];
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -233,6 +321,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   Premium:  "bg-amber-50 text-amber-600 border-amber-200",
   Tech:     "bg-blue-50 text-blue-600 border-blue-200",
   New:      "bg-rose-50 text-rose-600 border-rose-200",
+  Creative: "bg-purple-50 text-purple-600 border-purple-200",
 };
 
 export default function TemplatePicker({

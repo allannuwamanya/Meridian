@@ -1,11 +1,11 @@
 "use client";
 
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import {
   Zap, FileText, Brain, Target, TrendingUp, Shield,
-  ArrowRight, Sparkles, Star, CheckCircle, ChevronRight,
+  ArrowRight, Sparkles, Star,
   Play, Wand2, ArrowUpRight, Check
 } from "lucide-react";
 
@@ -30,50 +30,127 @@ const testimonials = [
   { quote: "I was struggling to pivot. Meridian analyzed my skills and rewrote my resume to highlight transferable experience.", name: "Elena R.", role: "Data Analyst" },
 ];
 
+const mockupScenarios = [
+  {
+    tool: "Auto-Tailor Engine",
+    status: "Live Tailoring",
+    role: "Senior Backend Engineer",
+    company: "FinTech Platform",
+    keywords: ["Microservices", "Kubernetes", "Cost Optimization", "CI/CD"],
+    original:
+      "Helped move our backend to services and made deployments faster.",
+    rewritten:
+      "Migrated 14 legacy services to Kubernetes microservices, cutting cloud spend by 38 percent and tripling deployment frequency.",
+    delta: "+22 ATS Match",
+    metricLabel: "Keyword alignment increased",
+  },
+  {
+    tool: "Quantification Lab",
+    status: "Metric Upgrade",
+    role: "Product Marketing Manager",
+    company: "B2B SaaS",
+    keywords: ["Pipeline Growth", "SQLs", "Campaign ROI", "Launch Strategy"],
+    original:
+      "Ran cross-functional campaigns for product launches and demand generation.",
+    rewritten:
+      "Led six cross-functional launch campaigns that generated 3.4M pipeline and increased SQL conversion by 29 percent.",
+    delta: "+31 Impact Score",
+    metricLabel: "Quantified outcomes unlocked",
+  },
+  {
+    tool: "ATS Keyword Scanner",
+    status: "Scanner Active",
+    role: "Data Analyst",
+    company: "Healthcare Network",
+    keywords: ["SQL", "Tableau", "Forecasting", "Stakeholder Reporting"],
+    original:
+      "Built dashboards and reports for teams across the organization.",
+    rewritten:
+      "Built SQL and Tableau reporting system used by 12 stakeholder teams, reducing decision latency by 41 percent.",
+    delta: "+18 ATS Match",
+    metricLabel: "Recruiter-ready phrasing",
+  },
+];
+
 // Interactive Typing Mockup Component
 const LiveTypingMockup = () => {
+  const [scenarioIdx, setScenarioIdx] = useState(0);
   const [text, setText] = useState("");
-  const fullText = "Spearheaded the migration of a legacy monolithic architecture to scalable microservices using Docker and Kubernetes, resulting in a 40% reduction in server costs and a 200% improvement in deployment frequency.";
+  const scenario = mockupScenarios[scenarioIdx];
 
   useEffect(() => {
+    setText("");
     let i = 0;
+    const fullText = scenario.rewritten;
     const interval = setInterval(() => {
-      setText(fullText.slice(0, i));
+      setText(fullText.slice(0, i + 1));
       i++;
       if (i > fullText.length) clearInterval(interval);
-    }, 40);
+    }, 18);
     return () => clearInterval(interval);
-  }, []);
+  }, [scenarioIdx, scenario.rewritten]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setScenarioIdx((prev) => (prev + 1) % mockupScenarios.length);
+    }, 7600);
+    return () => clearTimeout(timeout);
+  }, [scenarioIdx]);
 
   return (
-    <div className="relative w-full max-w-lg mx-auto lg:mx-0">
+    <div className="relative w-full max-w-xl mx-auto lg:mx-0">
       <div className="absolute -inset-1 bg-gradient-to-r from-rose-500 to-pink-500 rounded-3xl blur opacity-25 animate-pulse" />
       <div className="relative bg-white/60 backdrop-blur-xl border border-white/40 ring-1 ring-black/5 rounded-3xl shadow-2xl overflow-hidden">
         {/* Mockup Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100/50 bg-white/40">
           <div className="flex items-center gap-2">
             <Wand2 className="w-5 h-5 text-rose-500" />
-            <span className="text-sm font-semibold text-gray-800">Meridian AI </span>
+            <span className="text-sm font-semibold text-gray-800">Meridian Engine</span>
           </div>
           <div className="px-2 py-1 rounded bg-rose-50 text-rose-600 text-[10px] uppercase font-bold tracking-wider">
-            Enhancing
+            {scenario.status}
           </div>
         </div>
-        
+
+        <div className="grid grid-cols-2 gap-0 border-b border-gray-100/60 text-[10px]">
+          <div className="px-6 py-2.5 border-r border-gray-100/60">
+            <span className="text-gray-400 uppercase tracking-wider font-semibold">Target</span>
+            <p className="text-gray-800 font-semibold mt-0.5 truncate">{scenario.role}</p>
+          </div>
+          <div className="px-6 py-2.5">
+            <span className="text-gray-400 uppercase tracking-wider font-semibold">Tool</span>
+            <p className="text-gray-800 font-semibold mt-0.5 truncate">{scenario.tool}</p>
+          </div>
+        </div>
+
         {/* Mockup Body */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 space-y-5">
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">JD Keywords Matched</span>
+            <div className="flex flex-wrap gap-1.5">
+              {scenario.keywords.map((keyword) => (
+                <span
+                  key={keyword}
+                  className="px-2 py-1 rounded-md text-[10px] font-semibold bg-emerald-50 border border-emerald-100 text-emerald-700"
+                >
+                  {keyword}
+                </span>
+              ))}
+            </div>
+          </div>
+
           {/* Original */}
           <div className="space-y-2">
             <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Original Input</span>
             <div className="p-4 rounded-xl bg-gray-50 border border-gray-100/50 text-sm text-gray-500 italic">
-              "Moved our old codebase to microservices with docker. Saved money and made deploying faster."
+              {scenario.original}
             </div>
           </div>
-          
+
           {/* AI Output */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-pink-500 uppercase tracking-widest">Enhanced Output</span>
+              <span className="text-xs font-semibold text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-pink-500 uppercase tracking-widest">Meridian Rewrite</span>
               <Sparkles className="w-4 h-4 text-rose-400 animate-pulse" />
             </div>
             <div className="p-4 rounded-xl bg-rose-50/50 border border-rose-100/50 relative overflow-hidden">
@@ -84,19 +161,26 @@ const LiveTypingMockup = () => {
             </div>
           </div>
 
+          <div className="rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-3">
+            <p className="text-[10px] font-bold text-blue-700 uppercase tracking-widest mb-1">Why this works</p>
+            <p className="text-xs text-blue-800">
+              Mirrors the target role language, adds measurable impact, and keeps the claim factual.
+            </p>
+          </div>
+
           <div className="flex gap-2">
              <button className="flex-1 py-2.5 rounded-lg bg-gray-900 text-white text-xs font-semibold shadow-md flex items-center justify-center gap-2 hover:bg-gray-800 transition-colors">
-               <Check className="w-4 h-4" /> Apply Change
+               <Check className="w-4 h-4" /> Apply to Resume
              </button>
              <button className="py-2.5 px-4 rounded-lg bg-gray-100 text-gray-600 text-xs font-semibold hover:bg-gray-200 transition-colors">
-               Retry
+               Explain
              </button>
           </div>
         </div>
       </div>
-      
+
       {/* Decorative Elements */}
-      <motion.div 
+      <motion.div
         animate={{ y: [-10, 10, -10] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         className="absolute -right-12 top-20 bg-white/80 backdrop-blur-md border border-white/50 p-4 rounded-2xl shadow-xl"
@@ -106,8 +190,8 @@ const LiveTypingMockup = () => {
             <ArrowUpRight className="w-5 h-5 text-green-600" />
           </div>
           <div>
-            <div className="text-sm font-bold text-gray-900">+40% Payload</div>
-            <div className="text-xs text-gray-500">Impact Score Increased</div>
+            <div className="text-sm font-bold text-gray-900">{scenario.delta}</div>
+            <div className="text-xs text-gray-500">{scenario.metricLabel}</div>
           </div>
         </div>
       </motion.div>
@@ -228,7 +312,7 @@ export default function HomePage() {
         <section className="w-full max-w-7xl mx-auto px-6 py-32">
           <div className="text-center max-w-3xl mx-auto mb-20">
             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 mb-6">Intelligence at every step.</h2>
-            <p className="text-lg text-gray-500 font-medium">Meridian replaces 4 different tools. It's an editor, an AI copywriter, a resume scorer, and a formatting engine—all in one seamless UI.</p>
+            <p className="text-lg text-gray-500 font-medium">Meridian replaces 4 different tools. It is an editor, an AI copywriter, a resume scorer, and a formatting engine all in one seamless UI.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[280px]">
@@ -281,7 +365,7 @@ export default function HomePage() {
           <div className="relative z-10 max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
               <div>
-                <h2 className="text-4xl sm:text-5xl font-bold tracking-tight mb-8">Don't guess what recruiters want. <span className="text-rose-400">Know it.</span></h2>
+                <h2 className="text-4xl sm:text-5xl font-bold tracking-tight mb-8">Do not guess what recruiters want. <span className="text-rose-400">Know it.</span></h2>
                 <p className="text-xl text-gray-400 mb-12 leading-relaxed">Meridian is trained on millions of successful resumes and ATS parsing logic. It formats, scores, and writes precisely to maximize your interview conversion rate.</p>
                 
                 <div className="grid grid-cols-3 gap-8 border-t border-gray-800 pt-12">
@@ -309,7 +393,7 @@ export default function HomePage() {
                          <Star key={i} className="w-4 h-4 fill-rose-500 text-rose-500" />
                        ))}
                      </div>
-                     <p className="text-lg text-gray-200 mb-6 antialiased leading-relaxed">"{t.quote}"</p>
+                     <p className="text-lg text-gray-200 mb-6 antialiased leading-relaxed">&ldquo;{t.quote}&rdquo;</p>
                      <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white font-bold text-sm">
                            {t.name.charAt(0)}

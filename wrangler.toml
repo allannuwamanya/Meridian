@@ -1,7 +1,7 @@
 # Cloudflare Pages Configuration for Next.js
 # This file is used when deploying to Cloudflare Pages
 
-name = "meridian"
+name = "meridian-resume-builder"
 
 # Pages-specific configuration
 [pages]

@@ -253,7 +253,14 @@ export default function HomePage() {
             </div>
             
             <h1 className="text-5xl sm:text-6xl lg:text-[5rem] font-bold tracking-tighter leading-[1.05] text-gray-900 mb-8">
-              Write a resume that <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-pink-500 to-rose-500 bg-300% animate-gradient">demands</span> attention.
+              Write a resume that <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-500 via-pink-500 to-rose-500 bg-300% animate-gradient">demands</span> 
+              <motion.span
+                className="inline-block"
+                animate={{ rotate: [0, 10, 0, -10, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              >
+                🚀
+              </motion.span> attention.
             </h1>
             
             <p className="text-lg sm:text-xl text-gray-500 mb-10 leading-relaxed font-medium max-w-xl">
@@ -261,17 +268,32 @@ export default function HomePage() {
             </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              <button
+              <motion.button
                 onClick={() => router.push("/dashboard")}
-                className="w-full sm:w-auto flex items-center justify-center gap-2.5 bg-gray-900 text-white font-semibold px-8 py-4 rounded-full text-lg hover:bg-gray-800 transition-all duration-300 shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:-translate-y-1"
+                className="w-full sm:w-auto flex items-center justify-center gap-2.5 bg-gradient-to-r from-gray-900 to-gray-800 text-white font-semibold px-8 py-4 rounded-full text-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)] relative overflow-hidden group"
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
-                Build my resume — Free
-                <ArrowRight className="w-5 h-5" />
-              </button>
-              <button className="w-full sm:w-auto flex items-center justify-center gap-2 text-gray-600 font-semibold px-8 py-4 rounded-full text-lg hover:bg-gray-100 transition-all duration-300">
-                <Play className="w-5 h-5 fill-gray-600" />
+                <span className="relative z-10 flex items-center gap-2.5">
+                  Build my resume — Free
+                  <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                </span>
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-rose-600 to-pink-600 opacity-0"
+                  initial={{ opacity: 0, x: -100 }}
+                  whileHover={{ opacity: 0.1, x: 0 }}
+                  transition={{ duration: 0.3 }}
+                />
+              </motion.button>
+              <motion.button
+                className="w-full sm:w-auto flex items-center justify-center gap-2 text-gray-600 font-semibold px-8 py-4 rounded-full text-lg hover:bg-gray-100 transition-all duration-300 relative overflow-hidden group"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Play className="w-5 h-5 fill-gray-600 transition-transform group-hover:scale-110" />
                 See Demo
-              </button>
+              </motion.button>
             </div>
             
             <div className="mt-8 flex items-center gap-4 text-sm font-medium text-gray-500">
@@ -319,23 +341,27 @@ export default function HomePage() {
             {features.map((f, i) => (
               <motion.div
                 key={f.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                whileHover={{ scale: 0.98 }}
-                className={`group relative overflow-hidden rounded-3xl bg-white border border-gray-200/60 shadow-sm hover:shadow-xl hover:border-rose-200/60 transition-all duration-500 ${
+                transition={{ duration: 0.6, delay: i * 0.1, type: "spring", stiffness: 300, damping: 24 }}
+                whileHover={{ scale: 1.02, y: -4, boxShadow: "0 20px 40px rgba(0,0,0,0.15)" }}
+                className={`group relative overflow-hidden rounded-3xl bg-white border border-gray-200/60 shadow-sm transition-all duration-500 ${
                   f.size === 'large' ? 'md:col-span-2 md:row-span-2' : 
                   f.size === 'wide' ? 'md:col-span-2' : ''
                 }`}
               >
                 {/* Background gradient on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-rose-50/0 to-rose-50/0 group-hover:from-rose-50/50 group-hover:to-pink-50/50 transition-colors duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-br from-rose-50/0 to-pink-50/0 group-hover:from-rose-50/50 group-hover:to-pink-50/50 transition-colors duration-500" />
                 
                 <div className="relative h-full p-8 flex flex-col">
-                  <div className={`w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:bg-rose-50 group-hover:border-rose-100 transition-all duration-500 ${f.size === 'large' ? 'w-16 h-16' : ''}`}>
+                  <motion.div 
+                    className={`w-14 h-14 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-100 flex items-center justify-center mb-6 shadow-sm ${f.size === 'large' ? 'w-16 h-16' : ''}`}
+                    whileHover={{ scale: 1.1, rotate: [0, -5, 5, -5, 0] }}
+                    transition={{ duration: 0.4, type: "spring" }}
+                  >
                     <f.icon className={`w-7 h-7 text-gray-700 group-hover:text-rose-600 transition-colors duration-500 ${f.size === 'large' ? 'w-8 h-8' : ''}`} />
-                  </div>
+                  </motion.div>
                   
                   <div className={`mt-auto ${f.size === 'large' ? 'pb-8' : ''}`}>
                     <h3 className={`font-bold text-gray-900 mb-2 ${f.size === 'large' ? 'text-3xl' : 'text-xl'}`}>{f.label}</h3>
@@ -344,9 +370,15 @@ export default function HomePage() {
 
                   {/* Decorative Elements for larger cards */}
                   {f.size === 'large' && (
-                     <div className="absolute right-[-10%] bottom-[-10%] w-[60%] h-[60%] opacity-20 group-hover:opacity-40 transition-opacity duration-700 pointer-events-none">
-                       <div className="w-full h-full bg-rose-400 rounded-full blur-[80px]" />
-                     </div>
+                     <motion.div 
+                       className="absolute right-[-10%] bottom-[-10%] w-[60%] h-[60%] opacity-20 pointer-events-none"
+                       initial={{ opacity: 0.1, scale: 0.8 }}
+                       whileInView={{ opacity: 0.2, scale: 1 }}
+                       viewport={{ once: true }}
+                       transition={{ duration: 0.8, delay: 0.5 }}
+                     >
+                       <div className="w-full h-full bg-gradient-to-br from-rose-400 to-pink-500 rounded-full blur-[80px]" />
+                     </motion.div>
                   )}
                 </div>
               </motion.div>
@@ -355,27 +387,58 @@ export default function HomePage() {
         </section>
 
         {/* Stats & Testimonials */}
-        <section className="w-full bg-gray-900 py-32 rounded-[3rem] text-white relative overflow-hidden my-20 max-w-[95%] mx-auto">
+        <section className="w-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-32 rounded-[3rem] text-white relative overflow-hidden my-20 max-w-[95%] mx-auto">
           {/* Subtle dark mode background mesh */}
           <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
              <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-rose-600 blur-[150px]" />
              <div className="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full bg-blue-600 blur-[150px]" />
+             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-rose-900/30 via-transparent to-blue-900/30" />
           </div>
 
           <div className="relative z-10 max-w-7xl mx-auto px-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
               <div>
-                <h2 className="text-4xl sm:text-5xl font-bold tracking-tight mb-8">Do not guess what recruiters want. <span className="text-rose-400">Know it.</span></h2>
-                <p className="text-xl text-gray-400 mb-12 leading-relaxed">Meridian is trained on millions of successful resumes and ATS parsing logic. It formats, scores, and writes precisely to maximize your interview conversion rate.</p>
+                <motion.h2 
+                  className="text-4xl sm:text-5xl font-bold tracking-tight mb-8"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                >
+                  Do not guess what recruiters want. <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-400 to-pink-400">Know it.</span>
+                </motion.h2>
+                <motion.p 
+                  className="text-xl text-gray-400 mb-12 leading-relaxed"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.3 }}
+                >
+                  Meridian is trained on millions of successful resumes and ATS parsing logic. It formats, scores, and writes precisely to maximize your interview conversion rate.
+                </motion.p>
                 
-                <div className="grid grid-cols-3 gap-8 border-t border-gray-800 pt-12">
-                  {stats.map((s) => (
-                    <div key={s.label}>
+                <motion.div
+                  className="grid grid-cols-3 gap-8 border-t border-gray-700 pt-12"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                >
+                  {stats.map((s, i) => (
+                    <motion.div
+                      key={s.label}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: 0.5 + i * 0.1 }}
+                      whileHover={{ scale: 1.05, y: -4 }}
+                      className="text-center"
+                    >
                       <div className="text-4xl font-black text-white mb-2">{s.value}</div>
-                      <div className="text-sm font-medium text-gray-500">{s.label}</div>
-                    </div>
+                      <div className="text-sm font-medium text-gray-400">{s.label}</div>
+                    </motion.div>
                   ))}
-                </div>
+                </motion.div>
               </div>
 
               <div className="flex flex-col gap-6">
@@ -413,21 +476,39 @@ export default function HomePage() {
         {/* Final CTA */}
         <section className="w-full max-w-4xl mx-auto px-6 py-32 text-center">
            <motion.div
-             initial={{ opacity: 0, scale: 0.95 }}
+             initial={{ opacity: 0, scale: 0.9 }}
              whileInView={{ opacity: 1, scale: 1 }}
              viewport={{ once: true }}
-             transition={{ duration: 0.6 }}
+             transition={{ duration: 0.8, type: "spring", stiffness: 200, damping: 20 }}
              className="relative"
            >
-              <div className="absolute inset-0 bg-gradient-to-r from-rose-200 to-pink-200 blur-3xl opacity-50 rounded-full" />
+              <div className="absolute inset-0 bg-gradient-to-r from-rose-200 via-pink-200 to-orange-200 blur-3xl opacity-40 rounded-full" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-rose-300/20 via-pink-300/20 to-orange-300/20 rounded-full" />
               <h2 className="relative text-5xl md:text-6xl font-black tracking-tighter text-gray-900 mb-8">Ready to skip the <br/> resume filter?</h2>
-              <button
+              <motion.button
                 onClick={() => router.push("/dashboard")}
-                className="relative flex items-center justify-center gap-3 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold px-10 py-5 rounded-full text-xl mx-auto hover:shadow-[0_0_40px_rgba(225,29,72,0.4)] hover:scale-105 transition-all duration-300"
+                className="relative flex items-center justify-center gap-3 bg-gradient-to-r from-rose-600 to-pink-600 text-white font-bold px-10 py-5 rounded-full text-xl mx-auto overflow-hidden group"
+                whileHover={{ scale: 1.05, boxShadow: "0 0 50px rgba(225,29,72,0.4)" }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
               >
-                Start building for free
-                <ArrowRight className="w-6 h-6" />
-              </button>
+                <span className="relative z-10 flex items-center gap-3">
+                  Start building for free
+                  <motion.span
+                    className="relative"
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 0.5, repeat: Infinity, type: "keyframes" }}
+                  >
+                    <ArrowRight className="w-6 h-6" />
+                  </motion.span>
+                </span>
+                <motion.div
+                  className="absolute inset-0 bg-white/20"
+                  initial={{ x: -100 }}
+                  whileHover={{ x: 100 }}
+                  transition={{ duration: 0.3 }}
+                />
+              </motion.button>
               <p className="mt-6 text-sm font-medium text-gray-500">No credit card required. Download your PDF instantly.</p>
            </motion.div>
         </section>

@@ -1,5 +1,5 @@
 "use client";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   User, AlignLeft, Briefcase, GraduationCap, Layers, FolderOpen,
   Award, Heart, BookOpen, Globe, Trophy, Plus, Eye, EyeOff, GripVertical,
@@ -20,7 +20,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { useMemo } from "react";
 
-const SECTION_ICONS: Record<string, React.ComponentType<any>> = {
+const SECTION_ICONS: Record<string, React.ElementType> = {
   contact: User, summary: AlignLeft, experience: Briefcase,
   education: GraduationCap, skills: Layers, projects: FolderOpen,
   certifications: Award, volunteering: Heart,

@@ -13,13 +13,13 @@ export default function EditorPage() {
   const [showQuantLab, setShowQuantLab] = useState(false);
 
   useEffect(() => {
-    const handleOpen = (e: any) => {
-      const expId = e.detail?.expId;
+    const handleOpen = (e: CustomEvent) => {
+      const expId = (e as CustomEvent<{ expId?: string }>).detail?.expId;
       setShowQuantLab(true);
       quantLab.startLab(expId);
     };
-    window.addEventListener("open-quant-lab", handleOpen);
-    return () => window.removeEventListener("open-quant-lab", handleOpen);
+    window.addEventListener("open-quant-lab", handleOpen as EventListener);
+    return () => window.removeEventListener("open-quant-lab", handleOpen as EventListener);
   }, [quantLab]);
 
   return (

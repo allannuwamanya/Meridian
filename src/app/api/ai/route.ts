@@ -26,8 +26,9 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, delayMs = 1500): 
   for (let attempt = 0; attempt <= retries; attempt++) {
     try {
       return await fn();
-    } catch (err: any) {
-      const isRateLimit = err?.status === 429 || err?.message?.includes("429") || err?.message?.includes("quota") || err?.message?.includes("Too Many Requests");
+    } catch (err: unknown) {
+      const error = err as Error & { status?: number; message?: string };
+      const isRateLimit = error?.status === 429 || error?.message?.includes("429") || error?.message?.includes("quota") || error?.message?.includes("Too Many Requests");
       if (isRateLimit && attempt < retries) {
         // We will retry, the function should fetch a new key if structured that way.
         // Wait briefly before retry.
@@ -103,11 +104,12 @@ export async function POST(req: NextRequest) {
       if (!text?.trim()) throw new Error("AI returned an empty response — try again.");
       return NextResponse.json({ text }, { headers: { "X-Model": MODEL } });
     }
-  } catch (err: any) {
-    console.error("[AI Route Error]", err.message);
-    const isRateLimit = err?.message?.includes("429") || err?.message?.includes("quota");
+  } catch (err: unknown) {
+    const error = err as Error & { status?: number; message?: string };
+    console.error("[AI Route Error]", error.message);
+    const isRateLimit = error?.message?.includes("429") || error?.message?.includes("quota");
     return NextResponse.json(
-      { error: isRateLimit ? "Rate limit reached. Please wait a moment and try again." : (err.message ?? "AI request failed") },
+      { error: isRateLimit ? "Rate limit reached. Please wait a moment and try again." : (error.message ?? "AI request failed") },
       { status: isRateLimit ? 429 : 500 }
     );
   }

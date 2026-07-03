@@ -15,7 +15,7 @@ import AwardsEditor from "./sections/AwardsEditor";
 import ToastContainer from "@/components/ui/Toast";
 import ATSHealthBar from "./ATSHealthBar";
 
-const SECTION_MAP: Record<string, React.ComponentType> = {
+const SECTION_MAP: Record<string, React.ElementType> = {
   contact:        ContactEditor,
   summary:        SummaryEditor,
   experience:     ExperienceEditor,

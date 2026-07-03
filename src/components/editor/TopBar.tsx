@@ -2,7 +2,7 @@
 import { motion } from "framer-motion";
 import { Sparkles, Download, Loader2, Target, Layers, Check, ArrowLeft } from "lucide-react";
 import { useResumeStore } from "@/store/useResumeStore";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import JobTargetModal from "@/components/ui/JobTargetModal";
 import TemplatePicker from "@/components/ui/TemplatePicker";
 import DesignPicker from "@/components/ui/DesignPicker";

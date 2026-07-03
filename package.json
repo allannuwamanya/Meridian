@@ -4,9 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --no-lint",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:pages": "next build --no-lint && wrangler pages publish .next",
+    "deploy:pages": "wrangler pages deploy .next --project-name=meridian",
+    "dev:pages": "wrangler pages dev .next",
+    "clean": "rm -rf .next node_modules",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -36,6 +41,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.16",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

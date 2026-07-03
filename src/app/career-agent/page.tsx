@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useResumeStore } from "@/store/useResumeStore";
 import { useState, useCallback } from "react";
 import {
-  Mail, MessageSquare, DollarSign, Layers, Copy, Check, ChevronDown,
+  Mail, MessageSquare, DollarSign, Copy, Check, ChevronDown,
   ChevronUp, Loader2, Sparkles, ArrowLeft, Brain, RefreshCw,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -91,7 +91,7 @@ function QuestionCard({ q, i }: { q: InterviewPack["questions"][0]; i: number })
           >
             <div className="px-5 pb-4 border-t border-gray-100 space-y-3">
               <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5 mt-3">
-                <p className="text-[10px] font-bold text-amber-700 uppercase tracking-widest mb-1">What they're really testing</p>
+                <p className="text-[10px] font-bold text-amber-700 uppercase tracking-widest mb-1">What they&#39;re really testing</p>
                 <p className="text-xs text-amber-800">{q.guidance}</p>
               </div>
               <div className="bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2.5">
@@ -140,8 +140,9 @@ export default function CareerAgentPage() {
       const result = await generateFollowUpEmails(resume);
       setEmails(result);
       toast.success("3 follow-up emails ready!", "Personalised to your application.");
-    } catch (err: any) {
-      toast.error("Generation failed", err?.message ?? "Try again.");
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error("Generation failed", error?.message ?? "Try again.");
     } finally {
       setEmailLoading(false);
     }
@@ -153,8 +154,9 @@ export default function CareerAgentPage() {
       const result = await generateInterviewPrep(resume);
       setPack(result);
       toast.success("Interview pack ready!", `${result.questions.length} questions generated.`);
-    } catch (err: any) {
-      toast.error("Generation failed", err?.message ?? "Try again.");
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error("Generation failed", error?.message ?? "Try again.");
     } finally {
       setInterviewLoading(false);
     }
@@ -171,14 +173,15 @@ export default function CareerAgentPage() {
       );
       setSalary(result);
       toast.success("Salary range estimated!", "Based on your role and location.");
-    } catch (err: any) {
-      toast.error("Estimation failed", err?.message ?? "Try again.");
+    } catch (err: unknown) {
+      const error = err as Error;
+      toast.error("Estimation failed", error?.message ?? "Try again.");
     } finally {
       setSalaryLoading(false);
     }
   }, [resume, yearsExp]);
 
-  const TABS: { id: Tab; label: string; icon: React.ComponentType<any> }[] = [
+  const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
     { id: "emails", label: "Follow-Up Emails", icon: Mail },
     { id: "interview", label: "Interview Prep", icon: MessageSquare },
     { id: "salary", label: "Salary Insights", icon: DollarSign },
@@ -298,7 +301,7 @@ export default function CareerAgentPage() {
                 <div className="space-y-3">
                   {pack.keyThemes.length > 0 && (
                     <div className="bg-white rounded-2xl border border-gray-200 p-4">
-                      <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Key Themes They'll Probe</p>
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Key Themes They&#39;ll Probe</p>
                       <div className="flex flex-wrap gap-2">
                         {pack.keyThemes.map((t) => (
                           <span key={t} className="text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 px-3 py-1 rounded-full">{t}</span>

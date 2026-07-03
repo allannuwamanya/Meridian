@@ -69,6 +69,31 @@ html, body {
   box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.1), 0 2px 8px -2px rgba(0, 0, 0, 0.05);
 }
 
+/* Modern glass card with gradient border */
+.glass-modern {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-modern:hover {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(225, 29, 72, 0.2);
+  box-shadow: 0 8px 48px rgba(225, 29, 72, 0.12);
+}
+
+/* Frosted glass effect */
+.frosted {
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 /* Glow effect */
 .glow-accent { box-shadow: 0 0 24px var(--accent-glow); }
 
@@ -200,6 +225,79 @@ input::placeholder, textarea::placeholder { color: var(--text-placeholder); }
   background: linear-gradient(90deg, transparent 0%, rgba(225, 29, 72, 0.04) 50%, transparent 100%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease infinite;
+}
+
+/* Skeleton loading pulse */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(225, 29, 72, 0.04) 25%,
+    rgba(225, 29, 72, 0.08) 50%,
+    rgba(225, 29, 72, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-pulse 1.5s ease infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeleton-pulse {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Modern button press effect */
+.btn-press:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+/* Glow on focus */
+.glow-focus:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.15);
+}
+
+/* Float animation for cards */
+.float-card {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+/* Subtle pulse for active states */
+.pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Gradient border animation */
+.gradient-border {
+  position: relative;
+  background: white;
+  z-index: 1;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  margin: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(225, 29, 72, 0.3), rgba(244, 63, 94, 0.3));
+  animation: gradient-border-spin 3s linear infinite;
+}
+
+@keyframes gradient-border-spin {
+  0% { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
 }
 
 /* ─── PRINT STYLES ─── */

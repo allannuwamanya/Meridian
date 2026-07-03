@@ -6,11 +6,18 @@ import {
   CheckCircle2, AlertCircle, AlertTriangle, ChevronDown, ChevronUp, Shield,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { ResumeData, BulletPoint, WorkExperience, Education } from "@/types/resume";
 
 // ─── Local ATS rule engine — zero API calls ───────────────────────────────────
 
-function scoreATS(resume: any): { score: number; checks: { label: string; pass: boolean | "warn"; tip: string }[] } {
-  const checks = [];
+interface ATSCheck {
+  label: string;
+  pass: boolean | "warn";
+  tip: string;
+}
+
+function scoreATS(resume: ResumeData): { score: number; checks: ATSCheck[] } {
+  const checks: ATSCheck[] = [];
 
   // Contact completeness
   const c = resume.contact;
@@ -29,21 +36,21 @@ function scoreATS(resume: any): { score: number; checks: { label: string; pass: 
   checks.push({
     label: "Professional summary written",
     pass: resume.summary?.length >= 100,
-    tip: "A 2–3 sentence summary dramatically increases ATS match rate.",
+    tip: "A 2-3 sentence summary dramatically increases ATS match rate.",
   });
 
   // Experience
-  const totalBullets = resume.experience.flatMap((e: any) => e.bullets).filter((b: any) => b.content.trim());
-  const longBullets  = totalBullets.filter((b: any) => b.content.length > 200);
+  const totalBullets = resume.experience.flatMap((e: WorkExperience) => e.bullets).filter((b: BulletPoint) => b.content.trim());
+  const longBullets = totalBullets.filter((b: BulletPoint) => b.content.length > 200);
   checks.push({
     label: "Work experience entries filled",
-    pass: resume.experience.length > 0 && resume.experience.some((e: any) => e.role && e.company),
+    pass: resume.experience.length > 0 && resume.experience.some((e: WorkExperience) => e.role && e.company),
     tip: "At least one complete experience entry is required.",
   });
   checks.push({
     label: "Bullet points present",
     pass: totalBullets.length >= 3,
-    tip: "Aim for 3–6 bullets per role to pass ATS keyword density checks.",
+    tip: "Aim for 3-6 bullets per role to pass ATS keyword density checks.",
   });
   checks.push({
     label: "No overly long bullets (>200 chars)",
@@ -53,25 +60,25 @@ function scoreATS(resume: any): { score: number; checks: { label: string; pass: 
 
   // Quantified bullets
   const metricsRegex = /(\d+%|\d+x|\$[\d,.]+|\d+ (million|billion|users|customers|teams|people|engineers|points))/i;
-  const quantifiedCount = totalBullets.filter((b: any) => metricsRegex.test(b.content)).length;
+  const quantifiedCount = totalBullets.filter((b: BulletPoint) => metricsRegex.test(b.content)).length;
   checks.push({
     label: `Quantified bullets (${quantifiedCount}/${totalBullets.length})`,
     pass: quantifiedCount >= 2 ? true : quantifiedCount >= 1 ? "warn" as const : false,
-    tip: "Resumes with ≥2 quantified achievements get 40% more recruiter callbacks.",
+    tip: "Resumes with 2+ quantified achievements get 40% more recruiter callbacks.",
   });
 
   // Skills
   checks.push({
     label: "Skills section populated",
     pass: resume.skills.length >= 5,
-    tip: "Add 8–15 skills so ATS can match you against the job description.",
+    tip: "Add 8-15 skills so ATS can match you against the job description.",
   });
 
   // Education
   checks.push({
     label: "Education entry present",
-    pass: resume.education.length > 0 && resume.education.some((e: any) => e.institution || e.degree),
-    tip: "Include at least one education entry — most ATS require it.",
+    pass: resume.education.length > 0 && resume.education.some((e: Education) => e.institution || e.degree),
+    tip: "Include at least one education entry most ATS require it.",
   });
 
   // Job target
@@ -83,7 +90,7 @@ function scoreATS(resume: any): { score: number; checks: { label: string; pass: 
 
   const passed = checks.filter((c) => c.pass === true).length;
   const warned = checks.filter((c) => c.pass === "warn").length;
-  const score  = Math.round((passed / checks.length) * 100 + (warned / checks.length) * 30);
+  const score = Math.round((passed / checks.length) * 100 + (warned / checks.length) * 30);
 
   return { score: Math.min(score, 100), checks };
 }

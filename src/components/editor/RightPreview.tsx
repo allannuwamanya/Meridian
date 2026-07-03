@@ -17,7 +17,9 @@ import CareerChangerTemplate from "@/components/templates/CareerChanger";
 import InternationalTemplate from "@/components/templates/International";
 import CreativeTemplate from "@/components/templates/Creative";
 
-const TEMPLATES: Record<string, React.ComponentType<{ resume: any; isPreview?: boolean; onSectionClick?: (id: string) => void }>> = {
+import { ResumeData } from "@/types/resume";
+
+const TEMPLATES: Record<string, React.ElementType<{ resume: ResumeData; isPreview?: boolean; onSectionClick?: (id: string) => void }>> = {
   "modern-minimal": ModernMinimalTemplate,
   classic:          ClassicTemplate,
   executive:        ExecutiveTemplate,

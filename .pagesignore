@@ -1,0 +1,9 @@
+# Ignore Next.js cache files for Cloudflare Pages deployment
+.next/cache
+.next/cache/**
+
+# Ignore node_modules in standalone output
+.next/standalone/node_modules
+
+# Ignore other large files
+.next/cache/**/*.pack
